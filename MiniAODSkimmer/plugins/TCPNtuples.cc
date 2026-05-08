@@ -14,7 +14,8 @@ TCPNtuples::TCPNtuples(const edm::ParameterSet& iConfig) :
   TausECleaned_(consumes< vector<pat::Tau> > (iConfig.getParameter<edm::InputTag>("ECleanedTauCollection"))),
   TausLowPtECleaned_(consumes< vector<pat::Tau> > (iConfig.getParameter<edm::InputTag>("LowPtECleanedTauCollection"))),
   TausMCleaned_(consumes< vector<pat::Tau> > (iConfig.getParameter<edm::InputTag>("MCleanedTauCollection"))),
-  TausBoosted_(consumes< vector<pat::Tau> > (iConfig.getParameter<edm::InputTag>("BoostedTauCollection")))
+  TausBoosted_(consumes< vector<pat::Tau> > (iConfig.getParameter<edm::InputTag>("BoostedTauCollection"))),
+  Photons_(consumes< vector<pat::Photon> >(iConfig.getParameter<edm::InputTag>("PhotonCollection")))
 {
   usesResource(TFileService::kSharedResource);
 }
@@ -46,6 +47,8 @@ void TCPNtuples::beginJob() {
   tauInfoDataLowPtECleaned = new TauInfoDS();
   tauInfoDataMCleaned = new TauInfoDS();
   tauInfoDataBoosted = new TauInfoDS();
+  photonInfoData = new PhotonInfoDS();
+
   
   tree->Branch("Jets", "JetInfoDS", &jetInfoData);
   tree->Branch("Muons", "MuonInfoDS", &muonInfoData);
@@ -56,6 +59,7 @@ void TCPNtuples::beginJob() {
   tree->Branch("TausLowPtECleaned", "TauInfoDS", &tauInfoDataLowPtECleaned);
   tree->Branch("TausMCleaned", "TauInfoDS", &tauInfoDataMCleaned);
   tree->Branch("TausBoosted", "TauInfoDS", &tauInfoDataBoosted);
+  tree->Branch("Photons", "PhotonInfoDS", &photonInfoData);
   tree->Branch("Mets", &metInfo_, "pt/F:phi/F:eta/F:mass/F:ptUncor/F:phiUncor/F:ptJECUp/F:phiJECUp/F:ptJERUp/F:phiJERUp/F:ptUncUp/F:phiUncUp/F:ptJECDown/F:phiJECDown/F:ptJERDown/F:phiJERDown/F:ptUncDown/F:phiUncDown/F:covXX/F:covXY/F:covYY/F");
 }
 
@@ -312,6 +316,25 @@ void TCPNtuples::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       e.dxy = dxy;
       e.dz = dz;
       lowPtElectronInfoData->push_back(e);
+    }
+  }
+
+  edm::Handle< std::vector<pat::Photon> > PhotonsHandle;
+  iEvent.getByToken(Photons_, PhotonsHandle);
+  auto Photons = *PhotonsHandle;
+
+  if (Photons.size() > 0) {
+    for (unsigned int i = 0; i < Photons.size(); ++i) {
+      auto photon = Photons[i];
+      if (photon.pt() < 10 || photon.eta() > 2.5) continue;
+
+      PhotonInfo p;
+      p.pt   = photon.pt();
+      p.eta  = photon.eta();
+      p.phi  = photon.phi();
+      p.mass = photon.mass();
+
+      photonInfoData->push_back(p);
     }
   }
 
