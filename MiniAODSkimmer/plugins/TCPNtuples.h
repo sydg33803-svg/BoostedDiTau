@@ -22,6 +22,7 @@
 #include "DataFormats/PatCandidates/interface/Electron.h"
 #include "CommonTools/Egamma/interface/EffectiveAreas.h"
 #include "DataFormats/PatCandidates/interface/Tau.h"
+#include "DataFormats/PatCandidates/interface/Photon.h"
 
 #include "BoostedDiTau/MiniAODSkimmer/interface/JetInfoDS.h"
 #include "BoostedDiTau/MiniAODSkimmer/interface/MuonInfoDS.h"
@@ -51,6 +52,7 @@ public:
     muonInfoData->clear();
     electronInfoData->clear();
     lowPtElectronInfoData->clear();
+    photonInfoData->clear();
     tauInfoDataUnCleaned->clear();
     tauInfoDataECleaned->clear();
     tauInfoDataLowPtECleaned->clear();
@@ -88,6 +90,7 @@ public:
   TauInfoDS* tauInfoDataLowPtECleaned;
   TauInfoDS* tauInfoDataMCleaned;
   TauInfoDS* tauInfoDataBoosted;
+  PhotonInfoDS* photonInfoData;
 
 private:
 
@@ -112,6 +115,7 @@ private:
   edm::EDGetTokenT< std::vector<pat::Tau> > TausLowPtECleaned_;
   edm::EDGetTokenT< std::vector<pat::Tau> > TausMCleaned_;
   edm::EDGetTokenT< std::vector<pat::Tau> > TausBoosted_;
+  edm::EDGetTokenT< std::vector<pat::Photon> > Photons_;
   
   int event_;
   int run_;
