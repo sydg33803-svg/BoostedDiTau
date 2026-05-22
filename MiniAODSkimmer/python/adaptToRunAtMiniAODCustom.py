@@ -1102,7 +1102,7 @@ def addFurtherSkimming(process):
     
     
 def addTCPNtuples(process):
-    process.tcpNtuples = cms.EDAnalyzer("TCPNtuples",
+    process.TCPNtuples = cms.EDAnalyzer("TCPNtuples",
                                         METCollection = cms.InputTag("slimmedMETs"),
                                         JetCollection = cms.InputTag("updatedJets"),
                                         MuonCollection = cms.InputTag("slimmedMuons"),
