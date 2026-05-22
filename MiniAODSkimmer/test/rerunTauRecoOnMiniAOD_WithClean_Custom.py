@@ -109,7 +109,7 @@ elif runType == 'background':
     readFiles.extend([
         #'file:patMiniAOD_standard.root'
         #'/store/relval/CMSSW_10_5_0_pre1/RelValQCD_FlatPt_15_3000HS_13/MINIAODSIM/PU25ns_103X_mcRun2_asymptotic_v3-v1/20000/A5CBC261-E3AB-C842-896F-E6AFB38DD22F.root'
-        'file:/eos/uscms/store/user/rhabibul/HtoAA/HtoAAMiniAODTest/002C691B-A0CE-A24F-8805-03B4C52C9004.root'
+        'file:root://cmsxrootd.hep.wisc.edu:1094//store/mc/RunIISummer20UL16MiniAODAPVv2/DYJetsToLL_M-50_HT-70to100_TuneCP5_PSweights_13TeV-madgraphMLM-pythia8/MINIAODSIM/106X_mcRun2_asymptotic_preVFP_v11-v2/230000/10CA3EDE-F47E-044F-9F6E-DBAA69C46BFD.root'
     ])
 elif runType == 'data':
     readFiles.extend([
