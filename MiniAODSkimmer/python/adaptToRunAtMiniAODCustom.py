@@ -1117,6 +1117,7 @@ def addTCPNtuples(process):
                                         LowPtECleanedTauCollection = cms.InputTag('slimmedTausLowPtElectronCleaned'),
                                         MCleanedTauCollection = cms.InputTag('slimmedTausMuonCleaned'),
                                         BoostedTauCollection = cms.InputTag('slimmedTausBoosted'),
+                                        PhotonCollection = cms.InputTag('slimmedPhotons'),
                                         
     )
     process.tcpNtupleMaker = cms.Path(process.tcpNtuples)
