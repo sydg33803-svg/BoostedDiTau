@@ -332,7 +332,7 @@ void TCPNtuples::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       p.pt   = photon.pt();
       p.eta  = photon.eta();
       p.phi  = photon.phi();
-      p.mass = photon.mass();
+      // p.mass = photon.mass();
 
       photonInfoData->push_back(p);
     }
