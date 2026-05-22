@@ -18,18 +18,18 @@ from FWCore.ParameterSet.MassReplace import massSearchReplaceParam
 
 import sys
 #inputfile = sys.argv[2]
-inputfile = 'file:root://cmseos.fnal.gov//eos/uscms/store/user/zhangj/events/ALP/UL2017/TCP_m_10_w_1_htj_400toInf_slc6_amd64_gcc630_MINIAOD/TCP_m_10_w_1_htj_400toInf_slc6_amd64_gcc630_MINIAOD_1.root'
+inputfile = 'file:root://cmsxrootd.hep.wisc.edu:1094//store/mc/RunIISummer20UL16MiniAODAPVv2/DYJetsToLL_M-50_HT-70to100_TuneCP5_PSweights_13TeV-madgraphMLM-pythia8/MINIAODSIM/106X_mcRun2_asymptotic_preVFP_v11-v2/230000/10CA3EDE-F47E-044F-9F6E-DBAA69C46BFD.root'
 #runSignal = True
 #runSignal=False
 ###########
-runType = 'signal'
+runType = 'background'
 #runType = 'background'
 #runType = 'data'
 #maxEvents = 100
 maxEvents=-1
 appendOutput = True
-#isMC = True
-year='2017'
+isMC = True
+year='2016'
 ########
 
 
@@ -181,6 +181,7 @@ if appendOutput:
     process.output.outputCommands.append('keep *_slimmedTausLowPtElectronCleaned_*_*')
     process.output.outputCommands.append('keep *_slimmedTausMuonCleaned_*_*')
     process.output.outputCommands.append('keep *_lumiSummary_*_*')
+    process.output.outputCommands.append('keep *_slimmedPhotons_*_*')
     
  
 #####
