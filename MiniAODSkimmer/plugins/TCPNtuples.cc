@@ -328,7 +328,7 @@ void TCPNtuples::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       auto photon = Photons[i];
       if (photon.pt() < 10 || photon.eta() > 2.5) continue;
 
-      PhotonInfoDS p;
+      PhotonInfo p;
       p.pt   = photon.pt();
       p.eta  = photon.eta();
       p.phi  = photon.phi();
