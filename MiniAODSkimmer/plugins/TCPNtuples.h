@@ -28,6 +28,7 @@
 #include "BoostedDiTau/MiniAODSkimmer/interface/MuonInfoDS.h"
 #include "BoostedDiTau/MiniAODSkimmer/interface/ElectronInfoDS.h"
 #include "BoostedDiTau/MiniAODSkimmer/interface/TauInfoDS.h"
+#include "BoostedDiTau/MiniAODSkimmer/interface/PhotonInfoDS.h"
 
 #include "TH1D.h"
 #include "TH2D.h"
