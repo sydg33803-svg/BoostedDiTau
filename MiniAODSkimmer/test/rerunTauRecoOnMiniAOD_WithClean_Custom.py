@@ -289,3 +289,7 @@ dump_file = open('dump_rerunMiniAODClean.py','w')
 dump_file.write(process.dumpPython())
 
 SimpleMemoryCheck = cms.Service("SimpleMemoryCheck",ignoreTotal = cms.untracked.int32(1) )
+
+process.p = cms.Path(
+    process.TCPNtuples
+)
