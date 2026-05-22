@@ -3,14 +3,13 @@ import FWCore.ParameterSet.Config as cms
 process = cms.Process("TAURECO")
 
 process.source = cms.Source("PoolSource",
-    fileNames = cms.untracked.vstring('file:root://cmsxrootd.fnal.gov//store/mc/RunIISummer20UL18MiniAODv2/AToTauTau_ALP_M-30_HT-400toInf_TuneCP5_13TeV-madgraphMLM-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v16_L1v1-v2/2530000/050B7E1E-7335-EE43-82E3-42BE48F2BD58.root'),
+    fileNames = cms.untracked.vstring('file:root://cmsxrootd.hep.wisc.edu:1094//store/mc/RunIISummer20UL16MiniAODAPVv2/DYJetsToLL_M-50_HT-70to100_TuneCP5_PSweights_13TeV-madgraphMLM-pythia8/MINIAODSIM/106X_mcRun2_asymptotic_preVFP_v11-v2/230000/10CA3EDE-F47E-044F-9F6E-DBAA69C46BFD.root'),
     secondaryFileNames = cms.untracked.vstring()
 )
 process.CondDB = cms.PSet(
     DBParameters = cms.PSet(
         authenticationPath = cms.untracked.string(''),
         authenticationSystem = cms.untracked.int32(0),
-        connectionTimeout = cms.untracked.int32(0),
         messageLevel = cms.untracked.int32(0),
         security = cms.untracked.string('')
     ),
@@ -21,7 +20,6 @@ process.CondDBTauConnection = cms.PSet(
     DBParameters = cms.PSet(
         authenticationPath = cms.untracked.string(''),
         authenticationSystem = cms.untracked.int32(0),
-        connectionTimeout = cms.untracked.int32(0),
         messageLevel = cms.untracked.int32(0),
         security = cms.untracked.string('')
     ),
@@ -383,6 +381,12 @@ process.PackedCandsElectronCleaned = cms.EDProducer("ElectronCleanedPackedCandid
 )
 
 
+process.PackedCandsLowPtElectronCleaned = cms.EDProducer("LowPtElectronCleanedPackedCandidateProducer",
+    electronSrc = cms.InputTag("LowPtFilter","LowPtElectronRef"),
+    packedCandSrc = cms.InputTag("packedPFCandidates")
+)
+
+
 process.PackedCandsMuonCleaned = cms.EDProducer("MuonCleanedPackedCandidateProducer",
     muonSrc = cms.InputTag("LooseMuonFilter"),
     packedCandSrc = cms.InputTag("packedPFCandidates")
@@ -491,6 +495,15 @@ process.ak4PFJetTracksAssociatorAtVertexBoosted = cms.EDProducer("JetTracksAssoc
 
 
 process.ak4PFJetTracksAssociatorAtVertexElectronCleaned = cms.EDProducer("JetTracksAssociatorAtVertex",
+    coneSize = cms.double(0.4),
+    jets = cms.InputTag("ak4PFJets"),
+    pvSrc = cms.InputTag("offlinePrimaryVertices"),
+    tracks = cms.InputTag("generalTracks"),
+    useAssigned = cms.bool(False)
+)
+
+
+process.ak4PFJetTracksAssociatorAtVertexLowPtElectronCleaned = cms.EDProducer("JetTracksAssociatorAtVertex",
     coneSize = cms.double(0.4),
     jets = cms.InputTag("ak4PFJets"),
     pvSrc = cms.InputTag("offlinePrimaryVertices"),
@@ -754,6 +767,88 @@ process.ak4PFJetsLegacyHPSPiZerosElectronCleaned = cms.EDProducer("RecoTauPiZero
 )
 
 
+process.ak4PFJetsLegacyHPSPiZerosLowPtElectronCleaned = cms.EDProducer("RecoTauPiZeroProducer",
+    builders = cms.VPSet(cms.PSet(
+        applyElecTrackQcuts = cms.bool(False),
+        makeCombinatoricStrips = cms.bool(False),
+        maxStripBuildIterations = cms.int32(-1),
+        minGammaEtStripAdd = cms.double(1.0),
+        minGammaEtStripSeed = cms.double(1.0),
+        minStripEt = cms.double(1.0),
+        name = cms.string('s'),
+        plugin = cms.string('RecoTauPiZeroStripPlugin3'),
+        qualityCuts = cms.PSet(
+            isolationQualityCuts = cms.PSet(
+                maxDeltaZ = cms.double(0.2),
+                maxDeltaZToLeadTrack = cms.double(-1.0),
+                maxTrackChi2 = cms.double(100.0),
+                maxTransverseImpactParameter = cms.double(0.03),
+                minGammaEt = cms.double(1.5),
+                minTrackHits = cms.uint32(8),
+                minTrackPixelHits = cms.uint32(0),
+                minTrackPt = cms.double(1.0),
+                minTrackVertexWeight = cms.double(-1.0)
+            ),
+            leadingTrkOrPFCandOption = cms.string('leadPFCand'),
+            primaryVertexSrc = cms.InputTag("offlineSlimmedPrimaryVertices"),
+            pvFindingAlgo = cms.string('closestInDeltaZ'),
+            recoverLeadingTrk = cms.bool(False),
+            signalQualityCuts = cms.PSet(
+                maxDeltaZ = cms.double(0.4),
+                maxDeltaZToLeadTrack = cms.double(-1.0),
+                maxTrackChi2 = cms.double(100.0),
+                maxTransverseImpactParameter = cms.double(0.1),
+                minGammaEt = cms.double(1.0),
+                minNeutralHadronEt = cms.double(30.0),
+                minTrackHits = cms.uint32(3),
+                minTrackPixelHits = cms.uint32(0),
+                minTrackPt = cms.double(0.5),
+                minTrackVertexWeight = cms.double(-1.0)
+            ),
+            vertexTrackFiltering = cms.bool(False),
+            vxAssocQualityCuts = cms.PSet(
+                maxTrackChi2 = cms.double(100.0),
+                maxTransverseImpactParameter = cms.double(0.1),
+                minGammaEt = cms.double(1.0),
+                minTrackHits = cms.uint32(3),
+                minTrackPixelHits = cms.uint32(0),
+                minTrackPt = cms.double(0.5),
+                minTrackVertexWeight = cms.double(-1.0)
+            )
+        ),
+        stripCandidatesParticleIds = cms.vint32(2, 4),
+        stripEtaAssociationDistance = cms.double(0.05),
+        stripEtaAssociationDistanceFunc = cms.PSet(
+            function = cms.string('TMath::Min(0.15, TMath::Max(0.05, [0]*TMath::Power(pT, -[1])))'),
+            par0 = cms.double(0.197077),
+            par1 = cms.double(0.658701)
+        ),
+        stripPhiAssociationDistance = cms.double(0.2),
+        stripPhiAssociationDistanceFunc = cms.PSet(
+            function = cms.string('TMath::Min(0.3, TMath::Max(0.05, [0]*TMath::Power(pT, -[1])))'),
+            par0 = cms.double(0.352476),
+            par1 = cms.double(0.707716)
+        ),
+        updateStripAfterEachDaughter = cms.bool(False),
+        verbosity = cms.int32(0)
+    )),
+    jetSrc = cms.InputTag("patJetsPATLowPtElectronCleaned"),
+    massHypothesis = cms.double(0.136),
+    maxJetAbsEta = cms.double(2.5),
+    mightGet = cms.optional.untracked.vstring,
+    minJetPt = cms.double(14.0),
+    outputSelection = cms.string('pt > 0'),
+    ranking = cms.VPSet(cms.PSet(
+        name = cms.string('InStrip'),
+        plugin = cms.string('RecoTauPiZeroStringQuality'),
+        selection = cms.string('algoIs("kStrips")'),
+        selectionFailValue = cms.double(1000),
+        selectionPassFunction = cms.string('abs(mass() - 0.13579)')
+    )),
+    verbosity = cms.int32(0)
+)
+
+
 process.ak4PFJetsLegacyHPSPiZerosMuonCleaned = cms.EDProducer("RecoTauPiZeroProducer",
     builders = cms.VPSet(cms.PSet(
         applyElecTrackQcuts = cms.bool(False),
@@ -896,6 +991,39 @@ process.ak4PFJetsPATElectronCleaned = cms.EDProducer("FastjetJetProducer",
     rParam = cms.double(0.4),
     radiusPU = cms.double(0.5),
     src = cms.InputTag("PackedCandsElectronCleaned","packedPFCandidatesElectronCleaned"),
+    srcPVs = cms.InputTag(""),
+    useDeterministicSeed = cms.bool(True),
+    voronoiRfact = cms.double(-0.9)
+)
+
+
+process.ak4PFJetsPATLowPtElectronCleaned = cms.EDProducer("FastjetJetProducer",
+    Active_Area_Repeats = cms.int32(1),
+    GhostArea = cms.double(0.01),
+    Ghost_EtaMax = cms.double(5.0),
+    Rho_EtaMax = cms.double(4.4),
+    applyWeight = cms.bool(False),
+    doAreaDiskApprox = cms.bool(False),
+    doAreaFastjet = cms.bool(True),
+    doPUOffsetCorr = cms.bool(False),
+    doPVCorrection = cms.bool(False),
+    doRhoFastjet = cms.bool(False),
+    inputEMin = cms.double(0.0),
+    inputEtMin = cms.double(0.0),
+    jetAlgorithm = cms.string('AntiKt'),
+    jetPtMin = cms.double(5.0),
+    jetType = cms.string('PFJet'),
+    maxBadEcalCells = cms.uint32(9999999),
+    maxBadHcalCells = cms.uint32(9999999),
+    maxProblematicEcalCells = cms.uint32(9999999),
+    maxProblematicHcalCells = cms.uint32(9999999),
+    maxRecoveredEcalCells = cms.uint32(9999999),
+    maxRecoveredHcalCells = cms.uint32(9999999),
+    minSeed = cms.uint32(14327),
+    nSigmaPU = cms.double(1.0),
+    rParam = cms.double(0.4),
+    radiusPU = cms.double(0.5),
+    src = cms.InputTag("PackedCandsLowPtElectronCleaned","packedPFCandidatesLowPtElectronCleaned"),
     srcPVs = cms.InputTag(""),
     useDeterministicSeed = cms.bool(True),
     voronoiRfact = cms.double(-0.9)
@@ -1528,6 +1656,213 @@ process.ak4PFJetsRecoTauChargedHadronsElectronCleaned = cms.EDProducer("PFRecoTa
     maxJetAbsEta = cms.double(2.5),
     mightGet = cms.optional.untracked.vstring,
     minJetPt = cms.double(5),
+    outputSelection = cms.string('pt > 0.5'),
+    ranking = cms.VPSet(
+        cms.PSet(
+            name = cms.string('ChargedPFCandidate'),
+            plugin = cms.string('PFRecoTauChargedHadronStringQuality'),
+            selection = cms.string("algoIs(\'kChargedPFCandidate\')"),
+            selectionFailValue = cms.double(1000.0),
+            selectionPassFunction = cms.string('-pt')
+        ),
+        cms.PSet(
+            name = cms.string('ChargedPFCandidate'),
+            plugin = cms.string('PFRecoTauChargedHadronStringQuality'),
+            selection = cms.string("algoIs(\'kTrack\')"),
+            selectionFailValue = cms.double(1000.0),
+            selectionPassFunction = cms.string('-pt')
+        ),
+        cms.PSet(
+            name = cms.string('ChargedPFCandidate'),
+            plugin = cms.string('PFRecoTauChargedHadronStringQuality'),
+            selection = cms.string("algoIs(\'kPFNeutralHadron\')"),
+            selectionFailValue = cms.double(1000.0),
+            selectionPassFunction = cms.string('-pt')
+        )
+    ),
+    verbosity = cms.int32(0)
+)
+
+
+process.ak4PFJetsRecoTauChargedHadronsLowPtElectronCleaned = cms.EDProducer("PFRecoTauChargedHadronProducer",
+    builders = cms.VPSet(
+        cms.PSet(
+            chargedHadronCandidatesParticleIds = cms.vint32(1, 2, 3),
+            dRmergeNeutralHadronWrtChargedHadron = cms.double(0.005),
+            dRmergeNeutralHadronWrtElectron = cms.double(0.05),
+            dRmergeNeutralHadronWrtNeutralHadron = cms.double(0.01),
+            dRmergeNeutralHadronWrtOther = cms.double(0.005),
+            dRmergePhotonWrtChargedHadron = cms.double(0.005),
+            dRmergePhotonWrtElectron = cms.double(0.005),
+            dRmergePhotonWrtNeutralHadron = cms.double(0.01),
+            dRmergePhotonWrtOther = cms.double(0.005),
+            maxUnmatchedBlockElementsNeutralHadron = cms.int32(1),
+            maxUnmatchedBlockElementsPhoton = cms.int32(1),
+            minBlockElementMatchesNeutralHadron = cms.int32(2),
+            minBlockElementMatchesPhoton = cms.int32(2),
+            minMergeChargedHadronPt = cms.double(100.0),
+            minMergeGammaEt = cms.double(1.0),
+            minMergeNeutralHadronEt = cms.double(1.0),
+            name = cms.string('chargedPFCandidates'),
+            plugin = cms.string('PFRecoTauChargedHadronFromPFCandidatePlugin'),
+            qualityCuts = cms.PSet(
+                isolationQualityCuts = cms.PSet(
+                    maxDeltaZ = cms.double(0.2),
+                    maxDeltaZToLeadTrack = cms.double(-1.0),
+                    maxTrackChi2 = cms.double(100.0),
+                    maxTransverseImpactParameter = cms.double(0.03),
+                    minGammaEt = cms.double(1.5),
+                    minTrackHits = cms.uint32(8),
+                    minTrackPixelHits = cms.uint32(0),
+                    minTrackPt = cms.double(1.0),
+                    minTrackVertexWeight = cms.double(-1.0)
+                ),
+                leadingTrkOrPFCandOption = cms.string('leadPFCand'),
+                primaryVertexSrc = cms.InputTag("offlineSlimmedPrimaryVertices"),
+                pvFindingAlgo = cms.string('closestInDeltaZ'),
+                recoverLeadingTrk = cms.bool(False),
+                signalQualityCuts = cms.PSet(
+                    maxDeltaZ = cms.double(0.4),
+                    maxDeltaZToLeadTrack = cms.double(-1.0),
+                    maxTrackChi2 = cms.double(100.0),
+                    maxTransverseImpactParameter = cms.double(0.1),
+                    minGammaEt = cms.double(1.0),
+                    minNeutralHadronEt = cms.double(30.0),
+                    minTrackHits = cms.uint32(3),
+                    minTrackPixelHits = cms.uint32(0),
+                    minTrackPt = cms.double(0.5),
+                    minTrackVertexWeight = cms.double(-1.0)
+                ),
+                vertexTrackFiltering = cms.bool(False),
+                vxAssocQualityCuts = cms.PSet(
+                    maxTrackChi2 = cms.double(100.0),
+                    maxTransverseImpactParameter = cms.double(0.1),
+                    minGammaEt = cms.double(1.0),
+                    minTrackHits = cms.uint32(3),
+                    minTrackPixelHits = cms.uint32(0),
+                    minTrackPt = cms.double(0.5),
+                    minTrackVertexWeight = cms.double(-1.0)
+                )
+            ),
+            verbosity = cms.int32(0)
+        ),
+        cms.PSet(
+            dRcone = cms.double(0.5),
+            dRconeLimitedToJetArea = cms.bool(False),
+            dRmergeNeutralHadron = cms.double(0.1),
+            dRmergePhoton = cms.double(0.05),
+            minMergeChargedHadronPt = cms.double(100.0),
+            minMergeGammaEt = cms.double(1.0),
+            minMergeNeutralHadronEt = cms.double(1.0),
+            name = cms.string('lostTracks'),
+            plugin = cms.string('PFRecoTauChargedHadronFromLostTrackPlugin'),
+            qualityCuts = cms.PSet(
+                isolationQualityCuts = cms.PSet(
+                    maxDeltaZ = cms.double(0.2),
+                    maxDeltaZToLeadTrack = cms.double(-1.0),
+                    maxTrackChi2 = cms.double(100.0),
+                    maxTransverseImpactParameter = cms.double(0.03),
+                    minGammaEt = cms.double(1.5),
+                    minTrackHits = cms.uint32(8),
+                    minTrackPixelHits = cms.uint32(0),
+                    minTrackPt = cms.double(1.0),
+                    minTrackVertexWeight = cms.double(-1.0)
+                ),
+                leadingTrkOrPFCandOption = cms.string('leadPFCand'),
+                primaryVertexSrc = cms.InputTag("offlineSlimmedPrimaryVertices"),
+                pvFindingAlgo = cms.string('closestInDeltaZ'),
+                recoverLeadingTrk = cms.bool(False),
+                signalQualityCuts = cms.PSet(
+                    maxDeltaZ = cms.double(0.4),
+                    maxDeltaZToLeadTrack = cms.double(-1.0),
+                    maxTrackChi2 = cms.double(100.0),
+                    maxTransverseImpactParameter = cms.double(0.1),
+                    minGammaEt = cms.double(1.0),
+                    minNeutralHadronEt = cms.double(30.0),
+                    minTrackHits = cms.uint32(3),
+                    minTrackPixelHits = cms.uint32(0),
+                    minTrackPt = cms.double(0.5),
+                    minTrackVertexWeight = cms.double(-1.0)
+                ),
+                vertexTrackFiltering = cms.bool(False),
+                vxAssocQualityCuts = cms.PSet(
+                    maxTrackChi2 = cms.double(100.0),
+                    maxTransverseImpactParameter = cms.double(0.1),
+                    minGammaEt = cms.double(1.0),
+                    minTrackHits = cms.uint32(3),
+                    minTrackPixelHits = cms.uint32(0),
+                    minTrackPt = cms.double(0.5),
+                    minTrackVertexWeight = cms.double(-1.0)
+                )
+            ),
+            srcTracks = cms.InputTag("lostTracks"),
+            verbosity = cms.int32(0)
+        ),
+        cms.PSet(
+            chargedHadronCandidatesParticleIds = cms.vint32(5),
+            dRmergeNeutralHadronWrtChargedHadron = cms.double(0.005),
+            dRmergeNeutralHadronWrtElectron = cms.double(0.05),
+            dRmergeNeutralHadronWrtNeutralHadron = cms.double(0.01),
+            dRmergeNeutralHadronWrtOther = cms.double(0.005),
+            dRmergePhotonWrtChargedHadron = cms.double(0.005),
+            dRmergePhotonWrtElectron = cms.double(0.005),
+            dRmergePhotonWrtNeutralHadron = cms.double(0.01),
+            dRmergePhotonWrtOther = cms.double(0.005),
+            maxUnmatchedBlockElementsNeutralHadron = cms.int32(1),
+            maxUnmatchedBlockElementsPhoton = cms.int32(1),
+            minBlockElementMatchesNeutralHadron = cms.int32(2),
+            minBlockElementMatchesPhoton = cms.int32(2),
+            minMergeChargedHadronPt = cms.double(0.0),
+            minMergeGammaEt = cms.double(1.0),
+            minMergeNeutralHadronEt = cms.double(1.0),
+            name = cms.string('PFNeutralHadrons'),
+            plugin = cms.string('PFRecoTauChargedHadronFromPFCandidatePlugin'),
+            qualityCuts = cms.PSet(
+                isolationQualityCuts = cms.PSet(
+                    maxDeltaZ = cms.double(0.2),
+                    maxDeltaZToLeadTrack = cms.double(-1.0),
+                    maxTrackChi2 = cms.double(100.0),
+                    maxTransverseImpactParameter = cms.double(0.03),
+                    minGammaEt = cms.double(1.5),
+                    minTrackHits = cms.uint32(8),
+                    minTrackPixelHits = cms.uint32(0),
+                    minTrackPt = cms.double(1.0),
+                    minTrackVertexWeight = cms.double(-1.0)
+                ),
+                leadingTrkOrPFCandOption = cms.string('leadPFCand'),
+                primaryVertexSrc = cms.InputTag("offlineSlimmedPrimaryVertices"),
+                pvFindingAlgo = cms.string('closestInDeltaZ'),
+                recoverLeadingTrk = cms.bool(False),
+                signalQualityCuts = cms.PSet(
+                    maxDeltaZ = cms.double(0.4),
+                    maxDeltaZToLeadTrack = cms.double(-1.0),
+                    maxTrackChi2 = cms.double(100.0),
+                    maxTransverseImpactParameter = cms.double(0.1),
+                    minGammaEt = cms.double(1.0),
+                    minNeutralHadronEt = cms.double(30.0),
+                    minTrackHits = cms.uint32(3),
+                    minTrackPixelHits = cms.uint32(0),
+                    minTrackPt = cms.double(0.5),
+                    minTrackVertexWeight = cms.double(-1.0)
+                ),
+                vertexTrackFiltering = cms.bool(False),
+                vxAssocQualityCuts = cms.PSet(
+                    maxTrackChi2 = cms.double(100.0),
+                    maxTransverseImpactParameter = cms.double(0.1),
+                    minGammaEt = cms.double(1.0),
+                    minTrackHits = cms.uint32(3),
+                    minTrackPixelHits = cms.uint32(0),
+                    minTrackPt = cms.double(0.5),
+                    minTrackVertexWeight = cms.double(-1.0)
+                )
+            ),
+            verbosity = cms.int32(0)
+        )
+    ),
+    jetSrc = cms.InputTag("patJetsPATLowPtElectronCleaned"),
+    maxJetAbsEta = cms.double(2.5),
+    mightGet = cms.optional.untracked.vstring,
+    minJetPt = cms.double(14.0),
     outputSelection = cms.string('pt > 0.5'),
     ranking = cms.VPSet(
         cms.PSet(
@@ -2313,6 +2648,172 @@ process.combinatoricRecoTausElectronCleaned = cms.EDProducer("RecoTauProducer",
 )
 
 
+process.combinatoricRecoTausLowPtElectronCleaned = cms.EDProducer("RecoTauProducer",
+    buildNullTaus = cms.bool(False),
+    builders = cms.VPSet(cms.PSet(
+        decayModes = cms.VPSet(
+            cms.PSet(
+                maxPiZeros = cms.uint32(0),
+                maxTracks = cms.uint32(6),
+                nCharged = cms.uint32(1),
+                nPiZeros = cms.uint32(0)
+            ),
+            cms.PSet(
+                maxPiZeros = cms.uint32(6),
+                maxTracks = cms.uint32(6),
+                nCharged = cms.uint32(1),
+                nPiZeros = cms.uint32(1)
+            ),
+            cms.PSet(
+                maxPiZeros = cms.uint32(5),
+                maxTracks = cms.uint32(6),
+                nCharged = cms.uint32(1),
+                nPiZeros = cms.uint32(2)
+            ),
+            cms.PSet(
+                maxPiZeros = cms.uint32(0),
+                maxTracks = cms.uint32(6),
+                nCharged = cms.uint32(2),
+                nPiZeros = cms.uint32(0)
+            ),
+            cms.PSet(
+                maxPiZeros = cms.uint32(3),
+                maxTracks = cms.uint32(6),
+                nCharged = cms.uint32(2),
+                nPiZeros = cms.uint32(1)
+            ),
+            cms.PSet(
+                maxPiZeros = cms.uint32(0),
+                maxTracks = cms.uint32(6),
+                nCharged = cms.uint32(3),
+                nPiZeros = cms.uint32(0)
+            ),
+            cms.PSet(
+                maxPiZeros = cms.uint32(3),
+                maxTracks = cms.uint32(6),
+                nCharged = cms.uint32(3),
+                nPiZeros = cms.uint32(1)
+            )
+        ),
+        isolationConeSize = cms.double(0.5),
+        minAbsPhotonSumPt_insideSignalCone = cms.double(2.5),
+        minAbsPhotonSumPt_outsideSignalCone = cms.double(1000000000.0),
+        minRelPhotonSumPt_insideSignalCone = cms.double(0.1),
+        minRelPhotonSumPt_outsideSignalCone = cms.double(1000000000.0),
+        name = cms.string('combinatoric'),
+        pfCandSrc = cms.InputTag("PackedCandsLowPtElectronCleaned","packedPFCandidatesLowPtElectronCleaned"),
+        plugin = cms.string('RecoTauBuilderCombinatoricPlugin'),
+        qualityCuts = cms.PSet(
+            isolationQualityCuts = cms.PSet(
+                maxDeltaZ = cms.double(0.2),
+                maxDeltaZToLeadTrack = cms.double(-1.0),
+                maxTrackChi2 = cms.double(100.0),
+                maxTransverseImpactParameter = cms.double(0.03),
+                minGammaEt = cms.double(1.5),
+                minTrackHits = cms.uint32(8),
+                minTrackPixelHits = cms.uint32(0),
+                minTrackPt = cms.double(1.0),
+                minTrackVertexWeight = cms.double(-1.0)
+            ),
+            leadingTrkOrPFCandOption = cms.string('leadPFCand'),
+            primaryVertexSrc = cms.InputTag("offlineSlimmedPrimaryVertices"),
+            pvFindingAlgo = cms.string('closestInDeltaZ'),
+            recoverLeadingTrk = cms.bool(False),
+            signalQualityCuts = cms.PSet(
+                maxDeltaZ = cms.double(0.4),
+                maxDeltaZToLeadTrack = cms.double(-1.0),
+                maxTrackChi2 = cms.double(100.0),
+                maxTransverseImpactParameter = cms.double(0.1),
+                minGammaEt = cms.double(1.0),
+                minNeutralHadronEt = cms.double(30.0),
+                minTrackHits = cms.uint32(3),
+                minTrackPixelHits = cms.uint32(0),
+                minTrackPt = cms.double(0.5),
+                minTrackVertexWeight = cms.double(-1.0)
+            ),
+            vertexTrackFiltering = cms.bool(False),
+            vxAssocQualityCuts = cms.PSet(
+                maxTrackChi2 = cms.double(100.0),
+                maxTransverseImpactParameter = cms.double(0.1),
+                minGammaEt = cms.double(1.0),
+                minTrackHits = cms.uint32(3),
+                minTrackPixelHits = cms.uint32(0),
+                minTrackPt = cms.double(0.5),
+                minTrackVertexWeight = cms.double(-1.0)
+            )
+        ),
+        signalConeSize = cms.string('max(min(0.1, 3.0/pt()), 0.05)'),
+        verbosity = cms.int32(0)
+    )),
+    chargedHadronSrc = cms.InputTag("ak4PFJetsRecoTauChargedHadronsLowPtElectronCleaned"),
+    jetRegionSrc = cms.InputTag("recoTauAK4Jets08RegionPATLowPtElectronCleaned"),
+    jetSrc = cms.InputTag("patJetsPATLowPtElectronCleaned"),
+    maxJetAbsEta = cms.double(2.5),
+    minJetPt = cms.double(14.0),
+    modifiers = cms.VPSet(
+        cms.PSet(
+            name = cms.string('sipt'),
+            plugin = cms.string('RecoTauImpactParameterSignificancePlugin'),
+            qualityCuts = cms.PSet(
+                isolationQualityCuts = cms.PSet(
+                    maxDeltaZ = cms.double(0.2),
+                    maxDeltaZToLeadTrack = cms.double(-1.0),
+                    maxTrackChi2 = cms.double(100.0),
+                    maxTransverseImpactParameter = cms.double(0.03),
+                    minGammaEt = cms.double(1.5),
+                    minTrackHits = cms.uint32(8),
+                    minTrackPixelHits = cms.uint32(0),
+                    minTrackPt = cms.double(1.0),
+                    minTrackVertexWeight = cms.double(-1.0)
+                ),
+                leadingTrkOrPFCandOption = cms.string('leadPFCand'),
+                primaryVertexSrc = cms.InputTag("offlineSlimmedPrimaryVertices"),
+                pvFindingAlgo = cms.string('closestInDeltaZ'),
+                recoverLeadingTrk = cms.bool(False),
+                signalQualityCuts = cms.PSet(
+                    maxDeltaZ = cms.double(0.4),
+                    maxDeltaZToLeadTrack = cms.double(-1.0),
+                    maxTrackChi2 = cms.double(100.0),
+                    maxTransverseImpactParameter = cms.double(0.1),
+                    minGammaEt = cms.double(1.0),
+                    minNeutralHadronEt = cms.double(30.0),
+                    minTrackHits = cms.uint32(3),
+                    minTrackPixelHits = cms.uint32(0),
+                    minTrackPt = cms.double(0.5),
+                    minTrackVertexWeight = cms.double(-1.0)
+                ),
+                vertexTrackFiltering = cms.bool(False),
+                vxAssocQualityCuts = cms.PSet(
+                    maxTrackChi2 = cms.double(100.0),
+                    maxTransverseImpactParameter = cms.double(0.1),
+                    minGammaEt = cms.double(1.0),
+                    minTrackHits = cms.uint32(3),
+                    minTrackPixelHits = cms.uint32(0),
+                    minTrackPt = cms.double(0.5),
+                    minTrackVertexWeight = cms.double(-1.0)
+                )
+            )
+        ),
+        cms.PSet(
+            dRaddNeutralHadron = cms.double(0.12),
+            dRaddPhoton = cms.double(-1.0),
+            minGammaEt = cms.double(10.0),
+            minNeutralHadronEt = cms.double(50.0),
+            name = cms.string('tau_en_reconstruction'),
+            plugin = cms.string('PFRecoTauEnergyAlgorithmPlugin'),
+            verbosity = cms.int32(0)
+        ),
+        cms.PSet(
+            name = cms.string('tau_mass'),
+            plugin = cms.string('PFRecoTauMassPlugin'),
+            verbosity = cms.int32(0)
+        )
+    ),
+    outputSelection = cms.string('leadChargedHadrCand().isNonnull()'),
+    piZeroSrc = cms.InputTag("ak4PFJetsLegacyHPSPiZerosLowPtElectronCleaned")
+)
+
+
 process.combinatoricRecoTausMuonCleaned = cms.EDProducer("RecoTauProducer",
     buildNullTaus = cms.bool(False),
     builders = cms.VPSet(cms.PSet(
@@ -2612,6 +3113,52 @@ process.deepTau2017v2p1ElectronCleaned = cms.EDProducer("DeepTauId",
     pfcands = cms.InputTag("packedPFCandidates"),
     rho = cms.InputTag("fixedGridRhoAll"),
     taus = cms.InputTag("selectedPatTausNoNewIDsElectronCleaned"),
+    version = cms.uint32(2),
+    vertices = cms.InputTag("offlineSlimmedPrimaryVertices")
+)
+
+
+process.deepTau2017v2p1LowPtElectronCleaned = cms.EDProducer("DeepTauId",
+    VSeWP = cms.vstring(
+        '0.0630386',
+        '0.1686942',
+        '0.362813',
+        '0.6815435',
+        '0.8847544',
+        '0.9675541',
+        '0.9859251',
+        '0.9928449'
+    ),
+    VSjetWP = cms.vstring(
+        '0.2599605',
+        '0.4249705',
+        '0.5983682',
+        '0.7848675',
+        '0.8834768',
+        '0.9308689',
+        '0.9573137',
+        '0.9733927'
+    ),
+    VSmuWP = cms.vstring(
+        '0.1058354',
+        '0.2158633',
+        '0.5551894',
+        '0.8754835'
+    ),
+    debug_level = cms.int32(0),
+    disable_dxy_pca = cms.bool(True),
+    electrons = cms.InputTag("slimmedElectrons"),
+    graph_file = cms.vstring(
+        'core:RecoTauTag/TrainingFiles/data/DeepTauId/deepTau_2017v2p6_e6_core.pb',
+        'inner:RecoTauTag/TrainingFiles/data/DeepTauId/deepTau_2017v2p6_e6_inner.pb',
+        'outer:RecoTauTag/TrainingFiles/data/DeepTauId/deepTau_2017v2p6_e6_outer.pb'
+    ),
+    is_online = cms.bool(False),
+    mem_mapped = cms.bool(False),
+    muons = cms.InputTag("slimmedMuons"),
+    pfcands = cms.InputTag("packedPFCandidates"),
+    rho = cms.InputTag("fixedGridRhoAll"),
+    taus = cms.InputTag("selectedPatTausNoNewIDsLowPtElectronCleaned"),
     version = cms.uint32(2),
     vertices = cms.InputTag("offlineSlimmedPrimaryVertices")
 )
@@ -3166,6 +3713,172 @@ process.hpsPFTauBasicDiscriminatorsElectronCleaned = cms.EDProducer("PFRecoTauDi
     mightGet = cms.optional.untracked.vstring,
     minTauPtForNoIso = cms.double(-99),
     particleFlowSrc = cms.InputTag("PackedCandsElectronCleaned","packedPFCandidatesElectronCleaned"),
+    qualityCuts = cms.PSet(
+        isolationQualityCuts = cms.PSet(
+            maxDeltaZ = cms.double(0.2),
+            maxDeltaZToLeadTrack = cms.double(-1.0),
+            maxTrackChi2 = cms.double(100.0),
+            maxTransverseImpactParameter = cms.double(0.03),
+            minGammaEt = cms.double(1.0),
+            minTrackHits = cms.uint32(3),
+            minTrackPixelHits = cms.uint32(0),
+            minTrackPt = cms.double(0.5),
+            minTrackVertexWeight = cms.double(-1.0)
+        ),
+        leadingTrkOrPFCandOption = cms.string('leadPFCand'),
+        primaryVertexSrc = cms.InputTag("offlineSlimmedPrimaryVertices"),
+        pvFindingAlgo = cms.string('closestInDeltaZ'),
+        recoverLeadingTrk = cms.bool(False),
+        signalQualityCuts = cms.PSet(
+            maxDeltaZ = cms.double(0.4),
+            maxDeltaZToLeadTrack = cms.double(-1.0),
+            maxTrackChi2 = cms.double(100.0),
+            maxTransverseImpactParameter = cms.double(0.1),
+            minGammaEt = cms.double(1.0),
+            minNeutralHadronEt = cms.double(30.0),
+            minTrackHits = cms.uint32(3),
+            minTrackPixelHits = cms.uint32(0),
+            minTrackPt = cms.double(0.5),
+            minTrackVertexWeight = cms.double(-1.0)
+        ),
+        vertexTrackFiltering = cms.bool(False),
+        vxAssocQualityCuts = cms.PSet(
+            maxTrackChi2 = cms.double(100.0),
+            maxTransverseImpactParameter = cms.double(0.1),
+            minGammaEt = cms.double(1.0),
+            minTrackHits = cms.uint32(3),
+            minTrackPixelHits = cms.uint32(0),
+            minTrackPt = cms.double(0.5),
+            minTrackVertexWeight = cms.double(-1.0)
+        )
+    ),
+    rhoConeSize = cms.double(0.5),
+    rhoProducer = cms.InputTag("fixedGridRhoFastjetAll"),
+    rhoUEOffsetCorrection = cms.double(1),
+    verbosity = cms.int32(0),
+    vertexSrc = cms.InputTag("offlineSlimmedPrimaryVertices")
+)
+
+
+process.hpsPFTauBasicDiscriminatorsLowPtElectronCleaned = cms.EDProducer("PFRecoTauDiscriminationByIsolationContainer",
+    IDWPdefinitions = cms.VPSet(
+        cms.PSet(
+            IDname = cms.string('ByLooseCombinedIsolationDBSumPtCorr3Hits'),
+            maximumAbsoluteValues = cms.vdouble(2.5, 1000000000.0),
+            maximumRelativeValues = cms.vdouble(-1.0, 0.1),
+            referenceRawIDNames = cms.vstring(
+                'ByRawCombinedIsolationDBSumPtCorr3Hits',
+                'PhotonPtSumOutsideSignalCone'
+            )
+        ),
+        cms.PSet(
+            IDname = cms.string('ByMediumCombinedIsolationDBSumPtCorr3Hits'),
+            maximumAbsoluteValues = cms.vdouble(1.5, 1000000000.0),
+            maximumRelativeValues = cms.vdouble(-1.0, 0.1),
+            referenceRawIDNames = cms.vstring(
+                'ByRawCombinedIsolationDBSumPtCorr3Hits',
+                'PhotonPtSumOutsideSignalCone'
+            )
+        ),
+        cms.PSet(
+            IDname = cms.string('ByTightCombinedIsolationDBSumPtCorr3Hits'),
+            maximumAbsoluteValues = cms.vdouble(0.8, 1000000000.0),
+            maximumRelativeValues = cms.vdouble(-1.0, 0.1),
+            referenceRawIDNames = cms.vstring(
+                'ByRawCombinedIsolationDBSumPtCorr3Hits',
+                'PhotonPtSumOutsideSignalCone'
+            )
+        ),
+        cms.PSet(
+            IDname = cms.string('ByLooseChargedIsolation'),
+            maximumAbsoluteValues = cms.vdouble(2.5),
+            referenceRawIDNames = cms.vstring('ChargedIsoPtSum')
+        ),
+        cms.PSet(
+            IDname = cms.string('ByPhotonPtSumOutsideSignalCone'),
+            maximumRelativeValues = cms.vdouble(0.1),
+            referenceRawIDNames = cms.vstring('PhotonPtSumOutsideSignalCone')
+        )
+    ),
+    IDdefinitions = cms.VPSet(
+        cms.PSet(
+            ApplyDiscriminationByTrackerIsolation = cms.bool(True),
+            IDname = cms.string('ChargedIsoPtSum'),
+            storeRawSumPt = cms.bool(True)
+        ),
+        cms.PSet(
+            ApplyDiscriminationByECALIsolation = cms.bool(True),
+            IDname = cms.string('NeutralIsoPtSum'),
+            storeRawSumPt = cms.bool(True)
+        ),
+        cms.PSet(
+            ApplyDiscriminationByWeightedECALIsolation = cms.bool(True),
+            IDname = cms.string('NeutralIsoPtSumWeight'),
+            UseAllPFCandsForWeights = cms.bool(True),
+            storeRawSumPt = cms.bool(True)
+        ),
+        cms.PSet(
+            IDname = cms.string('TauFootprintCorrection'),
+            storeRawFootprintCorrection = cms.bool(True)
+        ),
+        cms.PSet(
+            IDname = cms.string('PhotonPtSumOutsideSignalCone'),
+            storeRawPhotonSumPt_outsideSignalCone = cms.bool(True)
+        ),
+        cms.PSet(
+            IDname = cms.string('PUcorrPtSum'),
+            applyDeltaBetaCorrection = cms.bool(True),
+            storeRawPUsumPt = cms.bool(True)
+        ),
+        cms.PSet(
+            ApplyDiscriminationByECALIsolation = cms.bool(True),
+            ApplyDiscriminationByTrackerIsolation = cms.bool(True),
+            IDname = cms.string('ByRawCombinedIsolationDBSumPtCorr3Hits'),
+            applyDeltaBetaCorrection = cms.bool(True),
+            storeRawSumPt = cms.bool(True)
+        )
+    ),
+    PFTauProducer = cms.InputTag("hpsPFTauProducerLowPtElectronCleaned"),
+    Prediscriminants = cms.PSet(
+        BooleanOperator = cms.string('and'),
+        decayMode = cms.PSet(
+            Producer = cms.InputTag("hpsPFTauDiscriminationByDecayModeFindingNewDMsLowPtElectronCleaned"),
+            cut = cms.double(0.5)
+        )
+    ),
+    WeightECALIsolation = cms.double(1),
+    applyFootprintCorrection = cms.bool(False),
+    applyRhoCorrection = cms.bool(False),
+    customOuterCone = cms.double(0.5),
+    deltaBetaFactor = cms.string('0.2000'),
+    deltaBetaPUTrackPtCutOverride = cms.bool(True),
+    deltaBetaPUTrackPtCutOverride_val = cms.double(0.5),
+    footprintCorrections = cms.VPSet(
+        cms.PSet(
+            offset = cms.string('0.0'),
+            selection = cms.string('decayMode() = 0')
+        ),
+        cms.PSet(
+            offset = cms.string('0.0'),
+            selection = cms.string('decayMode() = 1 || decayMode() = 2')
+        ),
+        cms.PSet(
+            offset = cms.string('2.7'),
+            selection = cms.string('decayMode() = 5')
+        ),
+        cms.PSet(
+            offset = cms.string('0.0'),
+            selection = cms.string('decayMode() = 6')
+        ),
+        cms.PSet(
+            offset = cms.string('max(2.0, 0.22*pt() - 2.0)'),
+            selection = cms.string('decayMode() = 10')
+        )
+    ),
+    isoConeSizeForDeltaBeta = cms.double(0.8),
+    mightGet = cms.optional.untracked.vstring,
+    minTauPtForNoIso = cms.double(-99),
+    particleFlowSrc = cms.InputTag("PackedCandsLowPtElectronCleaned","packedPFCandidatesLowPtElectronCleaned"),
     qualityCuts = cms.PSet(
         isolationQualityCuts = cms.PSet(
             maxDeltaZ = cms.double(0.2),
@@ -3847,6 +4560,162 @@ process.hpsPFTauBasicDiscriminatorsdR03ElectronCleaned = cms.EDProducer("PFRecoT
 )
 
 
+process.hpsPFTauBasicDiscriminatorsdR03LowPtElectronCleaned = cms.EDProducer("PFRecoTauDiscriminationByIsolationContainer",
+    IDWPdefinitions = cms.VPSet(
+        cms.PSet(
+            IDname = cms.string('ByLooseCombinedIsolationDBSumPtCorr3HitsdR03'),
+            maximumAbsoluteValues = cms.vdouble(2.5, 1000000000.0),
+            maximumRelativeValues = cms.vdouble(-1.0, 0.1),
+            referenceRawIDNames = cms.vstring(
+                'ByRawCombinedIsolationDBSumPtCorr3HitsdR03',
+                'PhotonPtSumOutsideSignalConedR03'
+            )
+        ),
+        cms.PSet(
+            IDname = cms.string('ByMediumCombinedIsolationDBSumPtCorr3HitsdR03'),
+            maximumAbsoluteValues = cms.vdouble(1.5, 1000000000.0),
+            maximumRelativeValues = cms.vdouble(-1.0, 0.1),
+            referenceRawIDNames = cms.vstring(
+                'ByRawCombinedIsolationDBSumPtCorr3HitsdR03',
+                'PhotonPtSumOutsideSignalConedR03'
+            )
+        ),
+        cms.PSet(
+            IDname = cms.string('ByTightCombinedIsolationDBSumPtCorr3HitsdR03'),
+            maximumAbsoluteValues = cms.vdouble(0.8, 1000000000.0),
+            maximumRelativeValues = cms.vdouble(-1.0, 0.1),
+            referenceRawIDNames = cms.vstring(
+                'ByRawCombinedIsolationDBSumPtCorr3HitsdR03',
+                'PhotonPtSumOutsideSignalConedR03'
+            )
+        )
+    ),
+    IDdefinitions = cms.VPSet(
+        cms.PSet(
+            ApplyDiscriminationByTrackerIsolation = cms.bool(True),
+            IDname = cms.string('ChargedIsoPtSumdR03'),
+            storeRawSumPt = cms.bool(True)
+        ),
+        cms.PSet(
+            ApplyDiscriminationByECALIsolation = cms.bool(True),
+            IDname = cms.string('NeutralIsoPtSumdR03'),
+            storeRawSumPt = cms.bool(True)
+        ),
+        cms.PSet(
+            ApplyDiscriminationByWeightedECALIsolation = cms.bool(True),
+            IDname = cms.string('NeutralIsoPtSumWeightdR03'),
+            UseAllPFCandsForWeights = cms.bool(True),
+            storeRawSumPt = cms.bool(True)
+        ),
+        cms.PSet(
+            IDname = cms.string('TauFootprintCorrectiondR03'),
+            storeRawFootprintCorrection = cms.bool(True)
+        ),
+        cms.PSet(
+            IDname = cms.string('PhotonPtSumOutsideSignalConedR03'),
+            storeRawPhotonSumPt_outsideSignalCone = cms.bool(True)
+        ),
+        cms.PSet(
+            IDname = cms.string('PUcorrPtSumdR03'),
+            applyDeltaBetaCorrection = cms.bool(True),
+            storeRawPUsumPt = cms.bool(True)
+        ),
+        cms.PSet(
+            ApplyDiscriminationByECALIsolation = cms.bool(True),
+            ApplyDiscriminationByTrackerIsolation = cms.bool(True),
+            IDname = cms.string('ByRawCombinedIsolationDBSumPtCorr3HitsdR03'),
+            applyDeltaBetaCorrection = cms.bool(True),
+            storeRawSumPt = cms.bool(True)
+        )
+    ),
+    PFTauProducer = cms.InputTag("hpsPFTauProducerLowPtElectronCleaned"),
+    Prediscriminants = cms.PSet(
+        BooleanOperator = cms.string('and'),
+        decayMode = cms.PSet(
+            Producer = cms.InputTag("hpsPFTauDiscriminationByDecayModeFindingNewDMsLowPtElectronCleaned"),
+            cut = cms.double(0.5)
+        )
+    ),
+    WeightECALIsolation = cms.double(1),
+    applyFootprintCorrection = cms.bool(False),
+    applyRhoCorrection = cms.bool(False),
+    customOuterCone = cms.double(0.3),
+    deltaBetaFactor = cms.string('0.0720'),
+    deltaBetaPUTrackPtCutOverride = cms.bool(True),
+    deltaBetaPUTrackPtCutOverride_val = cms.double(0.5),
+    footprintCorrections = cms.VPSet(
+        cms.PSet(
+            offset = cms.string('0.0'),
+            selection = cms.string('decayMode() = 0')
+        ),
+        cms.PSet(
+            offset = cms.string('0.0'),
+            selection = cms.string('decayMode() = 1 || decayMode() = 2')
+        ),
+        cms.PSet(
+            offset = cms.string('2.7'),
+            selection = cms.string('decayMode() = 5')
+        ),
+        cms.PSet(
+            offset = cms.string('0.0'),
+            selection = cms.string('decayMode() = 6')
+        ),
+        cms.PSet(
+            offset = cms.string('max(2.0, 0.22*pt() - 2.0)'),
+            selection = cms.string('decayMode() = 10')
+        )
+    ),
+    isoConeSizeForDeltaBeta = cms.double(0.8),
+    mightGet = cms.optional.untracked.vstring,
+    minTauPtForNoIso = cms.double(-99),
+    particleFlowSrc = cms.InputTag("PackedCandsLowPtElectronCleaned","packedPFCandidatesLowPtElectronCleaned"),
+    qualityCuts = cms.PSet(
+        isolationQualityCuts = cms.PSet(
+            maxDeltaZ = cms.double(0.2),
+            maxDeltaZToLeadTrack = cms.double(-1.0),
+            maxTrackChi2 = cms.double(100.0),
+            maxTransverseImpactParameter = cms.double(0.03),
+            minGammaEt = cms.double(1.0),
+            minTrackHits = cms.uint32(3),
+            minTrackPixelHits = cms.uint32(0),
+            minTrackPt = cms.double(0.5),
+            minTrackVertexWeight = cms.double(-1.0)
+        ),
+        leadingTrkOrPFCandOption = cms.string('leadPFCand'),
+        primaryVertexSrc = cms.InputTag("offlineSlimmedPrimaryVertices"),
+        pvFindingAlgo = cms.string('closestInDeltaZ'),
+        recoverLeadingTrk = cms.bool(False),
+        signalQualityCuts = cms.PSet(
+            maxDeltaZ = cms.double(0.4),
+            maxDeltaZToLeadTrack = cms.double(-1.0),
+            maxTrackChi2 = cms.double(100.0),
+            maxTransverseImpactParameter = cms.double(0.1),
+            minGammaEt = cms.double(1.0),
+            minNeutralHadronEt = cms.double(30.0),
+            minTrackHits = cms.uint32(3),
+            minTrackPixelHits = cms.uint32(0),
+            minTrackPt = cms.double(0.5),
+            minTrackVertexWeight = cms.double(-1.0)
+        ),
+        vertexTrackFiltering = cms.bool(False),
+        vxAssocQualityCuts = cms.PSet(
+            maxTrackChi2 = cms.double(100.0),
+            maxTransverseImpactParameter = cms.double(0.1),
+            minGammaEt = cms.double(1.0),
+            minTrackHits = cms.uint32(3),
+            minTrackPixelHits = cms.uint32(0),
+            minTrackPt = cms.double(0.5),
+            minTrackVertexWeight = cms.double(-1.0)
+        )
+    ),
+    rhoConeSize = cms.double(0.5),
+    rhoProducer = cms.InputTag("fixedGridRhoFastjetAll"),
+    rhoUEOffsetCorrection = cms.double(1),
+    verbosity = cms.int32(0),
+    vertexSrc = cms.InputTag("offlineSlimmedPrimaryVertices")
+)
+
+
 process.hpsPFTauBasicDiscriminatorsdR03MuonCleaned = cms.EDProducer("PFRecoTauDiscriminationByIsolationContainer",
     IDWPdefinitions = cms.VPSet(
         cms.PSet(
@@ -4054,6 +4923,23 @@ process.hpsPFTauDiscriminationByDeadECALElectronRejectionElectronCleaned = cms.E
 )
 
 
+process.hpsPFTauDiscriminationByDeadECALElectronRejectionLowPtElectronCleaned = cms.EDProducer("PFRecoTauDiscriminationAgainstElectronDeadECAL",
+    PFTauProducer = cms.InputTag("hpsPFTauProducerLowPtElectronCleaned"),
+    Prediscriminants = cms.PSet(
+        BooleanOperator = cms.string('and'),
+        decayMode = cms.PSet(
+            Producer = cms.InputTag("hpsPFTauDiscriminationByDecayModeFindingNewDMsLowPtElectronCleaned"),
+            cut = cms.double(0.5)
+        )
+    ),
+    dR = cms.double(0.08),
+    extrapolateToECalEntrance = cms.bool(True),
+    mightGet = cms.optional.untracked.vstring,
+    minStatus = cms.uint32(12),
+    verbosity = cms.int32(0)
+)
+
+
 process.hpsPFTauDiscriminationByDeadECALElectronRejectionMuonCleaned = cms.EDProducer("PFRecoTauDiscriminationAgainstElectronDeadECAL",
     PFTauProducer = cms.InputTag("hpsPFTauProducerMuonCleaned"),
     Prediscriminants = cms.PSet(
@@ -4231,6 +5117,85 @@ process.hpsPFTauDiscriminationByDecayModeFindingBoosted = cms.EDProducer("PFReco
 
 process.hpsPFTauDiscriminationByDecayModeFindingElectronCleaned = cms.EDProducer("PFRecoTauDiscriminationByHPSSelection",
     PFTauProducer = cms.InputTag("hpsPFTauProducerElectronCleaned"),
+    Prediscriminants = cms.PSet(
+        BooleanOperator = cms.string('and')
+    ),
+    decayModes = cms.VPSet(
+        cms.PSet(
+            applyBendCorrection = cms.PSet(
+                eta = cms.bool(True),
+                mass = cms.bool(True),
+                phi = cms.bool(True)
+            ),
+            assumeStripMass = cms.double(-1.0),
+            maxMass = cms.string('1.'),
+            maxPi0Mass = cms.double(1000000000.0),
+            minMass = cms.double(-1000.0),
+            minPi0Mass = cms.double(-1000.0),
+            nCharged = cms.uint32(1),
+            nChargedPFCandsMin = cms.uint32(1),
+            nPiZeros = cms.uint32(0),
+            nTracksMin = cms.uint32(1)
+        ),
+        cms.PSet(
+            applyBendCorrection = cms.PSet(
+                eta = cms.bool(True),
+                mass = cms.bool(True),
+                phi = cms.bool(True)
+            ),
+            assumeStripMass = cms.double(0.1349),
+            maxMass = cms.string('max(1.3, min(1.3*sqrt(pt/100.), 4.2))'),
+            maxPi0Mass = cms.double(1000000000.0),
+            minMass = cms.double(0.3),
+            minPi0Mass = cms.double(-1000.0),
+            nCharged = cms.uint32(1),
+            nChargedPFCandsMin = cms.uint32(1),
+            nPiZeros = cms.uint32(1),
+            nTracksMin = cms.uint32(1)
+        ),
+        cms.PSet(
+            applyBendCorrection = cms.PSet(
+                eta = cms.bool(True),
+                mass = cms.bool(True),
+                phi = cms.bool(True)
+            ),
+            assumeStripMass = cms.double(0.0),
+            maxMass = cms.string('max(1.2, min(1.2*sqrt(pt/100.), 4.0))'),
+            maxPi0Mass = cms.double(0.2),
+            minMass = cms.double(0.4),
+            minPi0Mass = cms.double(0.05),
+            nCharged = cms.uint32(1),
+            nChargedPFCandsMin = cms.uint32(1),
+            nPiZeros = cms.uint32(2),
+            nTracksMin = cms.uint32(1)
+        ),
+        cms.PSet(
+            applyBendCorrection = cms.PSet(
+                eta = cms.bool(False),
+                mass = cms.bool(False),
+                phi = cms.bool(False)
+            ),
+            assumeStripMass = cms.double(-1.0),
+            maxMass = cms.string('1.5'),
+            maxPi0Mass = cms.double(1000000000.0),
+            minMass = cms.double(0.8),
+            minPi0Mass = cms.double(-1000.0),
+            nCharged = cms.uint32(3),
+            nChargedPFCandsMin = cms.uint32(1),
+            nPiZeros = cms.uint32(0),
+            nTracksMin = cms.uint32(2)
+        )
+    ),
+    matchingCone = cms.double(0.5),
+    minPixelHits = cms.int32(1),
+    minTauPt = cms.double(0.0),
+    requireTauChargedHadronsToBeChargedPFCands = cms.bool(True),
+    verbosity = cms.int32(0)
+)
+
+
+process.hpsPFTauDiscriminationByDecayModeFindingLowPtElectronCleaned = cms.EDProducer("PFRecoTauDiscriminationByHPSSelection",
+    PFTauProducer = cms.InputTag("hpsPFTauProducerLowPtElectronCleaned"),
     Prediscriminants = cms.PSet(
         BooleanOperator = cms.string('and')
     ),
@@ -4768,6 +5733,133 @@ process.hpsPFTauDiscriminationByDecayModeFindingNewDMsElectronCleaned = cms.EDPr
 )
 
 
+process.hpsPFTauDiscriminationByDecayModeFindingNewDMsLowPtElectronCleaned = cms.EDProducer("PFRecoTauDiscriminationByHPSSelection",
+    PFTauProducer = cms.InputTag("hpsPFTauProducerLowPtElectronCleaned"),
+    Prediscriminants = cms.PSet(
+        BooleanOperator = cms.string('and')
+    ),
+    decayModes = cms.VPSet(
+        cms.PSet(
+            applyBendCorrection = cms.PSet(
+                eta = cms.bool(True),
+                mass = cms.bool(True),
+                phi = cms.bool(True)
+            ),
+            assumeStripMass = cms.double(-1.0),
+            maxMass = cms.string('1.'),
+            maxPi0Mass = cms.double(1000000000.0),
+            minMass = cms.double(-1000.0),
+            minPi0Mass = cms.double(-1000.0),
+            nCharged = cms.uint32(1),
+            nChargedPFCandsMin = cms.uint32(1),
+            nPiZeros = cms.uint32(0),
+            nTracksMin = cms.uint32(1)
+        ),
+        cms.PSet(
+            applyBendCorrection = cms.PSet(
+                eta = cms.bool(True),
+                mass = cms.bool(True),
+                phi = cms.bool(True)
+            ),
+            assumeStripMass = cms.double(0.1349),
+            maxMass = cms.string('max(1.3, min(1.3*sqrt(pt/100.), 4.2))'),
+            maxPi0Mass = cms.double(1000000000.0),
+            minMass = cms.double(0.3),
+            minPi0Mass = cms.double(-1000.0),
+            nCharged = cms.uint32(1),
+            nChargedPFCandsMin = cms.uint32(1),
+            nPiZeros = cms.uint32(1),
+            nTracksMin = cms.uint32(1)
+        ),
+        cms.PSet(
+            applyBendCorrection = cms.PSet(
+                eta = cms.bool(True),
+                mass = cms.bool(True),
+                phi = cms.bool(True)
+            ),
+            assumeStripMass = cms.double(0.0),
+            maxMass = cms.string('max(1.2, min(1.2*sqrt(pt/100.), 4.0))'),
+            maxPi0Mass = cms.double(0.2),
+            minMass = cms.double(0.4),
+            minPi0Mass = cms.double(0.05),
+            nCharged = cms.uint32(1),
+            nChargedPFCandsMin = cms.uint32(1),
+            nPiZeros = cms.uint32(2),
+            nTracksMin = cms.uint32(1)
+        ),
+        cms.PSet(
+            applyBendCorrection = cms.PSet(
+                eta = cms.bool(False),
+                mass = cms.bool(False),
+                phi = cms.bool(False)
+            ),
+            assumeStripMass = cms.double(-1.0),
+            maxMass = cms.string('1.2'),
+            maxPi0Mass = cms.double(1000000000.0),
+            minMass = cms.double(0.0),
+            minPi0Mass = cms.double(-1000.0),
+            nCharged = cms.uint32(2),
+            nChargedPFCandsMin = cms.uint32(1),
+            nPiZeros = cms.uint32(0),
+            nTracksMin = cms.uint32(2)
+        ),
+        cms.PSet(
+            applyBendCorrection = cms.PSet(
+                eta = cms.bool(False),
+                mass = cms.bool(False),
+                phi = cms.bool(False)
+            ),
+            assumeStripMass = cms.double(-1.0),
+            maxMass = cms.string('max(1.2, min(1.2*sqrt(pt/100.), 4.0))'),
+            maxPi0Mass = cms.double(1000000000.0),
+            minMass = cms.double(0.0),
+            minPi0Mass = cms.double(-1000.0),
+            nCharged = cms.uint32(2),
+            nChargedPFCandsMin = cms.uint32(1),
+            nPiZeros = cms.uint32(1),
+            nTracksMin = cms.uint32(2)
+        ),
+        cms.PSet(
+            applyBendCorrection = cms.PSet(
+                eta = cms.bool(False),
+                mass = cms.bool(False),
+                phi = cms.bool(False)
+            ),
+            assumeStripMass = cms.double(-1.0),
+            maxMass = cms.string('1.5'),
+            maxPi0Mass = cms.double(1000000000.0),
+            minMass = cms.double(0.8),
+            minPi0Mass = cms.double(-1000.0),
+            nCharged = cms.uint32(3),
+            nChargedPFCandsMin = cms.uint32(1),
+            nPiZeros = cms.uint32(0),
+            nTracksMin = cms.uint32(2)
+        ),
+        cms.PSet(
+            applyBendCorrection = cms.PSet(
+                eta = cms.bool(False),
+                mass = cms.bool(False),
+                phi = cms.bool(False)
+            ),
+            assumeStripMass = cms.double(-1.0),
+            maxMass = cms.string('1.6'),
+            maxPi0Mass = cms.double(1000000000.0),
+            minMass = cms.double(0.9),
+            minPi0Mass = cms.double(-1000.0),
+            nCharged = cms.uint32(3),
+            nChargedPFCandsMin = cms.uint32(1),
+            nPiZeros = cms.uint32(1),
+            nTracksMin = cms.uint32(2)
+        )
+    ),
+    matchingCone = cms.double(0.5),
+    minPixelHits = cms.int32(1),
+    minTauPt = cms.double(0.0),
+    requireTauChargedHadronsToBeChargedPFCands = cms.bool(False),
+    verbosity = cms.int32(0)
+)
+
+
 process.hpsPFTauDiscriminationByDecayModeFindingNewDMsMuonCleaned = cms.EDProducer("PFRecoTauDiscriminationByHPSSelection",
     PFTauProducer = cms.InputTag("hpsPFTauProducerMuonCleaned"),
     Prediscriminants = cms.PSet(
@@ -5132,6 +6224,85 @@ process.hpsPFTauDiscriminationByDecayModeFindingOldDMsElectronCleaned = cms.EDPr
 )
 
 
+process.hpsPFTauDiscriminationByDecayModeFindingOldDMsLowPtElectronCleaned = cms.EDProducer("PFRecoTauDiscriminationByHPSSelection",
+    PFTauProducer = cms.InputTag("hpsPFTauProducerLowPtElectronCleaned"),
+    Prediscriminants = cms.PSet(
+        BooleanOperator = cms.string('and')
+    ),
+    decayModes = cms.VPSet(
+        cms.PSet(
+            applyBendCorrection = cms.PSet(
+                eta = cms.bool(True),
+                mass = cms.bool(True),
+                phi = cms.bool(True)
+            ),
+            assumeStripMass = cms.double(-1.0),
+            maxMass = cms.string('1.'),
+            maxPi0Mass = cms.double(1000000000.0),
+            minMass = cms.double(-1000.0),
+            minPi0Mass = cms.double(-1000.0),
+            nCharged = cms.uint32(1),
+            nChargedPFCandsMin = cms.uint32(1),
+            nPiZeros = cms.uint32(0),
+            nTracksMin = cms.uint32(1)
+        ),
+        cms.PSet(
+            applyBendCorrection = cms.PSet(
+                eta = cms.bool(True),
+                mass = cms.bool(True),
+                phi = cms.bool(True)
+            ),
+            assumeStripMass = cms.double(0.1349),
+            maxMass = cms.string('max(1.3, min(1.3*sqrt(pt/100.), 4.2))'),
+            maxPi0Mass = cms.double(1000000000.0),
+            minMass = cms.double(0.3),
+            minPi0Mass = cms.double(-1000.0),
+            nCharged = cms.uint32(1),
+            nChargedPFCandsMin = cms.uint32(1),
+            nPiZeros = cms.uint32(1),
+            nTracksMin = cms.uint32(1)
+        ),
+        cms.PSet(
+            applyBendCorrection = cms.PSet(
+                eta = cms.bool(True),
+                mass = cms.bool(True),
+                phi = cms.bool(True)
+            ),
+            assumeStripMass = cms.double(0.0),
+            maxMass = cms.string('max(1.2, min(1.2*sqrt(pt/100.), 4.0))'),
+            maxPi0Mass = cms.double(0.2),
+            minMass = cms.double(0.4),
+            minPi0Mass = cms.double(0.05),
+            nCharged = cms.uint32(1),
+            nChargedPFCandsMin = cms.uint32(1),
+            nPiZeros = cms.uint32(2),
+            nTracksMin = cms.uint32(1)
+        ),
+        cms.PSet(
+            applyBendCorrection = cms.PSet(
+                eta = cms.bool(False),
+                mass = cms.bool(False),
+                phi = cms.bool(False)
+            ),
+            assumeStripMass = cms.double(-1.0),
+            maxMass = cms.string('1.5'),
+            maxPi0Mass = cms.double(1000000000.0),
+            minMass = cms.double(0.8),
+            minPi0Mass = cms.double(-1000.0),
+            nCharged = cms.uint32(3),
+            nChargedPFCandsMin = cms.uint32(1),
+            nPiZeros = cms.uint32(0),
+            nTracksMin = cms.uint32(2)
+        )
+    ),
+    matchingCone = cms.double(0.5),
+    minPixelHits = cms.int32(1),
+    minTauPt = cms.double(0.0),
+    requireTauChargedHadronsToBeChargedPFCands = cms.bool(True),
+    verbosity = cms.int32(0)
+)
+
+
 process.hpsPFTauDiscriminationByDecayModeFindingOldDMsMuonCleaned = cms.EDProducer("PFRecoTauDiscriminationByHPSSelection",
     PFTauProducer = cms.InputTag("hpsPFTauProducerMuonCleaned"),
     Prediscriminants = cms.PSet(
@@ -5310,6 +6481,39 @@ process.hpsPFTauDiscriminationByIsolationMVArun2v1DBdR03oldDMwLTElectronCleaned 
 )
 
 
+process.hpsPFTauDiscriminationByIsolationMVArun2v1DBdR03oldDMwLTLowPtElectronCleaned = cms.EDProducer("RecoTauDiscriminantCutMultiplexer",
+    PFTauProducer = cms.InputTag("hpsPFTauProducerLowPtElectronCleaned"),
+    Prediscriminants = cms.PSet(
+        BooleanOperator = cms.string('and'),
+        decayMode = cms.PSet(
+            Producer = cms.InputTag("hpsPFTauDiscriminationByDecayModeFindingNewDMsLowPtElectronCleaned"),
+            cut = cms.double(0.5)
+        )
+    ),
+    inputFileName = cms.FileInPath('RecoTauTag/RecoTau/data/emptyMVAinputFile'),
+    loadMVAfromDB = cms.bool(True),
+    mapping = cms.VPSet(cms.PSet(
+        category = cms.uint32(0),
+        cut = cms.string('RecoTauTag_tauIdMVAIsoDBoldDMdR0p3wLT'),
+        variable = cms.string('pt')
+    )),
+    mightGet = cms.optional.untracked.vstring,
+    mvaOutput_normalization = cms.string('RecoTauTag_tauIdMVAIsoDBoldDMdR0p3wLT_mvaOutput_normalization'),
+    rawValues = cms.vstring('discriminator'),
+    toMultiplex = cms.InputTag("hpsPFTauDiscriminationByIsolationMVArun2v1DBdR03oldDMwLTrawLowPtElectronCleaned"),
+    verbosity = cms.int32(0),
+    workingPoints = cms.vstring(
+        '_VVLoose',
+        '_VLoose',
+        '_Loose',
+        '_Medium',
+        '_Tight',
+        '_VTight',
+        '_VVTight'
+    )
+)
+
+
 process.hpsPFTauDiscriminationByIsolationMVArun2v1DBdR03oldDMwLTMuonCleaned = cms.EDProducer("RecoTauDiscriminantCutMultiplexer",
     PFTauProducer = cms.InputTag("hpsPFTauProducerMuonCleaned"),
     Prediscriminants = cms.PSet(
@@ -5402,6 +6606,27 @@ process.hpsPFTauDiscriminationByIsolationMVArun2v1DBdR03oldDMwLTrawElectronClean
     mvaOpt = cms.string('DBoldDMwLTwGJ'),
     srcBasicTauDiscriminators = cms.InputTag("hpsPFTauBasicDiscriminatorsdR03ElectronCleaned"),
     srcTauTransverseImpactParameters = cms.InputTag("hpsPFTauTransverseImpactParametersElectronCleaned"),
+    verbosity = cms.int32(0)
+)
+
+
+process.hpsPFTauDiscriminationByIsolationMVArun2v1DBdR03oldDMwLTrawLowPtElectronCleaned = cms.EDProducer("PFRecoTauDiscriminationByMVAIsolationRun2",
+    PFTauProducer = cms.InputTag("hpsPFTauProducerLowPtElectronCleaned"),
+    Prediscriminants = cms.PSet(
+        BooleanOperator = cms.string('and'),
+        decayMode = cms.PSet(
+            Producer = cms.InputTag("hpsPFTauDiscriminationByDecayModeFindingNewDMsLowPtElectronCleaned"),
+            cut = cms.double(0.5)
+        )
+    ),
+    inputFileName = cms.optional.FileInPath,
+    inputIDNameSuffix = cms.string('dR03'),
+    loadMVAfromDB = cms.bool(True),
+    mightGet = cms.optional.untracked.vstring,
+    mvaName = cms.string('RecoTauTag_tauIdMVAIsoDBoldDMdR0p3wLT'),
+    mvaOpt = cms.string('DBoldDMwLTwGJ'),
+    srcBasicTauDiscriminators = cms.InputTag("hpsPFTauBasicDiscriminatorsdR03LowPtElectronCleaned"),
+    srcTauTransverseImpactParameters = cms.InputTag("hpsPFTauTransverseImpactParametersLowPtElectronCleaned"),
     verbosity = cms.int32(0)
 )
 
@@ -5526,6 +6751,39 @@ process.hpsPFTauDiscriminationByIsolationMVArun2v1DBnewDMwLTElectronCleaned = cm
 )
 
 
+process.hpsPFTauDiscriminationByIsolationMVArun2v1DBnewDMwLTLowPtElectronCleaned = cms.EDProducer("RecoTauDiscriminantCutMultiplexer",
+    PFTauProducer = cms.InputTag("hpsPFTauProducerLowPtElectronCleaned"),
+    Prediscriminants = cms.PSet(
+        BooleanOperator = cms.string('and'),
+        decayMode = cms.PSet(
+            Producer = cms.InputTag("hpsPFTauDiscriminationByDecayModeFindingNewDMsLowPtElectronCleaned"),
+            cut = cms.double(0.5)
+        )
+    ),
+    inputFileName = cms.FileInPath('RecoTauTag/RecoTau/data/emptyMVAinputFile'),
+    loadMVAfromDB = cms.bool(True),
+    mapping = cms.VPSet(cms.PSet(
+        category = cms.uint32(0),
+        cut = cms.string('RecoTauTag_tauIdMVAIsoDBnewDMwLT'),
+        variable = cms.string('pt')
+    )),
+    mightGet = cms.optional.untracked.vstring,
+    mvaOutput_normalization = cms.string('RecoTauTag_tauIdMVAIsoDBnewDMwLT_mvaOutput_normalization'),
+    rawValues = cms.vstring('discriminator'),
+    toMultiplex = cms.InputTag("hpsPFTauDiscriminationByIsolationMVArun2v1DBnewDMwLTrawLowPtElectronCleaned"),
+    verbosity = cms.int32(0),
+    workingPoints = cms.vstring(
+        '_VVLoose',
+        '_VLoose',
+        '_Loose',
+        '_Medium',
+        '_Tight',
+        '_VTight',
+        '_VVTight'
+    )
+)
+
+
 process.hpsPFTauDiscriminationByIsolationMVArun2v1DBnewDMwLTMuonCleaned = cms.EDProducer("RecoTauDiscriminantCutMultiplexer",
     PFTauProducer = cms.InputTag("hpsPFTauProducerMuonCleaned"),
     Prediscriminants = cms.PSet(
@@ -5618,6 +6876,27 @@ process.hpsPFTauDiscriminationByIsolationMVArun2v1DBnewDMwLTrawElectronCleaned =
     mvaOpt = cms.string('DBnewDMwLTwGJ'),
     srcBasicTauDiscriminators = cms.InputTag("hpsPFTauBasicDiscriminatorsElectronCleaned"),
     srcTauTransverseImpactParameters = cms.InputTag("hpsPFTauTransverseImpactParametersElectronCleaned"),
+    verbosity = cms.int32(0)
+)
+
+
+process.hpsPFTauDiscriminationByIsolationMVArun2v1DBnewDMwLTrawLowPtElectronCleaned = cms.EDProducer("PFRecoTauDiscriminationByMVAIsolationRun2",
+    PFTauProducer = cms.InputTag("hpsPFTauProducerLowPtElectronCleaned"),
+    Prediscriminants = cms.PSet(
+        BooleanOperator = cms.string('and'),
+        decayMode = cms.PSet(
+            Producer = cms.InputTag("hpsPFTauDiscriminationByDecayModeFindingNewDMsLowPtElectronCleaned"),
+            cut = cms.double(0.5)
+        )
+    ),
+    inputFileName = cms.optional.FileInPath,
+    inputIDNameSuffix = cms.string(''),
+    loadMVAfromDB = cms.bool(True),
+    mightGet = cms.optional.untracked.vstring,
+    mvaName = cms.string('RecoTauTag_tauIdMVAIsoDBnewDMwLT'),
+    mvaOpt = cms.string('DBnewDMwLTwGJ'),
+    srcBasicTauDiscriminators = cms.InputTag("hpsPFTauBasicDiscriminatorsLowPtElectronCleaned"),
+    srcTauTransverseImpactParameters = cms.InputTag("hpsPFTauTransverseImpactParametersLowPtElectronCleaned"),
     verbosity = cms.int32(0)
 )
 
@@ -5742,6 +7021,39 @@ process.hpsPFTauDiscriminationByIsolationMVArun2v1DBoldDMwLTElectronCleaned = cm
 )
 
 
+process.hpsPFTauDiscriminationByIsolationMVArun2v1DBoldDMwLTLowPtElectronCleaned = cms.EDProducer("RecoTauDiscriminantCutMultiplexer",
+    PFTauProducer = cms.InputTag("hpsPFTauProducerLowPtElectronCleaned"),
+    Prediscriminants = cms.PSet(
+        BooleanOperator = cms.string('and'),
+        decayMode = cms.PSet(
+            Producer = cms.InputTag("hpsPFTauDiscriminationByDecayModeFindingNewDMsLowPtElectronCleaned"),
+            cut = cms.double(0.5)
+        )
+    ),
+    inputFileName = cms.FileInPath('RecoTauTag/RecoTau/data/emptyMVAinputFile'),
+    loadMVAfromDB = cms.bool(True),
+    mapping = cms.VPSet(cms.PSet(
+        category = cms.uint32(0),
+        cut = cms.string('RecoTauTag_tauIdMVAIsoDBoldDMwLT'),
+        variable = cms.string('pt')
+    )),
+    mightGet = cms.optional.untracked.vstring,
+    mvaOutput_normalization = cms.string('RecoTauTag_tauIdMVAIsoDBoldDMwLT_mvaOutput_normalization'),
+    rawValues = cms.vstring('discriminator'),
+    toMultiplex = cms.InputTag("hpsPFTauDiscriminationByIsolationMVArun2v1DBoldDMwLTrawLowPtElectronCleaned"),
+    verbosity = cms.int32(0),
+    workingPoints = cms.vstring(
+        '_VVLoose',
+        '_VLoose',
+        '_Loose',
+        '_Medium',
+        '_Tight',
+        '_VTight',
+        '_VVTight'
+    )
+)
+
+
 process.hpsPFTauDiscriminationByIsolationMVArun2v1DBoldDMwLTMuonCleaned = cms.EDProducer("RecoTauDiscriminantCutMultiplexer",
     PFTauProducer = cms.InputTag("hpsPFTauProducerMuonCleaned"),
     Prediscriminants = cms.PSet(
@@ -5834,6 +7146,27 @@ process.hpsPFTauDiscriminationByIsolationMVArun2v1DBoldDMwLTrawElectronCleaned =
     mvaOpt = cms.string('DBoldDMwLTwGJ'),
     srcBasicTauDiscriminators = cms.InputTag("hpsPFTauBasicDiscriminatorsElectronCleaned"),
     srcTauTransverseImpactParameters = cms.InputTag("hpsPFTauTransverseImpactParametersElectronCleaned"),
+    verbosity = cms.int32(0)
+)
+
+
+process.hpsPFTauDiscriminationByIsolationMVArun2v1DBoldDMwLTrawLowPtElectronCleaned = cms.EDProducer("PFRecoTauDiscriminationByMVAIsolationRun2",
+    PFTauProducer = cms.InputTag("hpsPFTauProducerLowPtElectronCleaned"),
+    Prediscriminants = cms.PSet(
+        BooleanOperator = cms.string('and'),
+        decayMode = cms.PSet(
+            Producer = cms.InputTag("hpsPFTauDiscriminationByDecayModeFindingNewDMsLowPtElectronCleaned"),
+            cut = cms.double(0.5)
+        )
+    ),
+    inputFileName = cms.optional.FileInPath,
+    inputIDNameSuffix = cms.string(''),
+    loadMVAfromDB = cms.bool(True),
+    mightGet = cms.optional.untracked.vstring,
+    mvaName = cms.string('RecoTauTag_tauIdMVAIsoDBoldDMwLT'),
+    mvaOpt = cms.string('DBoldDMwLTwGJ'),
+    srcBasicTauDiscriminators = cms.InputTag("hpsPFTauBasicDiscriminatorsLowPtElectronCleaned"),
+    srcTauTransverseImpactParameters = cms.InputTag("hpsPFTauTransverseImpactParametersLowPtElectronCleaned"),
     verbosity = cms.int32(0)
 )
 
@@ -5961,6 +7294,42 @@ process.hpsPFTauDiscriminationByLooseElectronRejectionElectronCleaned = cms.EDPr
     HcalTotOverPLead_minValue = cms.double(0.1),
     PFElectronMVA_maxValue = cms.double(0.6),
     PFTauProducer = cms.InputTag("hpsPFTauProducerElectronCleaned"),
+    Prediscriminants = cms.PSet(
+        BooleanOperator = cms.string('and')
+    )
+)
+
+
+process.hpsPFTauDiscriminationByLooseElectronRejectionLowPtElectronCleaned = cms.EDProducer("PFRecoTauDiscriminationAgainstElectron",
+    ApplyCut_BremCombined = cms.bool(False),
+    ApplyCut_BremsRecoveryEOverPLead = cms.bool(False),
+    ApplyCut_EOverPLead = cms.bool(False),
+    ApplyCut_EcalCrackCut = cms.bool(False),
+    ApplyCut_ElectronPreID = cms.bool(False),
+    ApplyCut_ElectronPreID_2D = cms.bool(False),
+    ApplyCut_EmFraction = cms.bool(False),
+    ApplyCut_Hcal3x3OverPLead = cms.bool(False),
+    ApplyCut_HcalMaxOverPLead = cms.bool(False),
+    ApplyCut_HcalTotOverPLead = cms.bool(False),
+    ApplyCut_PFElectronMVA = cms.bool(True),
+    BremCombined_Fraction = cms.double(0.99),
+    BremCombined_HOP = cms.double(0.1),
+    BremCombined_Mass = cms.double(0.55),
+    BremCombined_StripSize = cms.double(0.03),
+    BremsRecoveryEOverPLead_maxValue = cms.double(1.8),
+    BremsRecoveryEOverPLead_minValue = cms.double(0.8),
+    EOverPLead_maxValue = cms.double(1.8),
+    EOverPLead_minValue = cms.double(0.8),
+    ElecPreID0_EOverPLead_maxValue = cms.double(0.95),
+    ElecPreID0_HOverPLead_minValue = cms.double(0.05),
+    ElecPreID1_EOverPLead_maxValue = cms.double(0.8),
+    ElecPreID1_HOverPLead_minValue = cms.double(0.15),
+    EmFraction_maxValue = cms.double(0.9),
+    Hcal3x3OverPLead_minValue = cms.double(0.1),
+    HcalMaxOverPLead_minValue = cms.double(0.1),
+    HcalTotOverPLead_minValue = cms.double(0.1),
+    PFElectronMVA_maxValue = cms.double(0.6),
+    PFTauProducer = cms.InputTag("hpsPFTauProducerLowPtElectronCleaned"),
     Prediscriminants = cms.PSet(
         BooleanOperator = cms.string('and')
     )
@@ -6216,6 +7585,77 @@ process.hpsPFTauDiscriminationByMVA6ElectronRejectionElectronCleaned = cms.EDPro
 )
 
 
+process.hpsPFTauDiscriminationByMVA6ElectronRejectionLowPtElectronCleaned = cms.EDProducer("RecoTauDiscriminantCutMultiplexer",
+    PFTauProducer = cms.InputTag("hpsPFTauProducerLowPtElectronCleaned"),
+    Prediscriminants = cms.PSet(
+        BooleanOperator = cms.string('and'),
+        decayMode = cms.PSet(
+            Producer = cms.InputTag("hpsPFTauDiscriminationByDecayModeFindingNewDMsLowPtElectronCleaned"),
+            cut = cms.double(0.5)
+        )
+    ),
+    inputFileName = cms.FileInPath('RecoTauTag/RecoTau/data/emptyMVAinputFile'),
+    loadMVAfromDB = cms.bool(True),
+    mapping = cms.VPSet(
+        cms.PSet(
+            category = cms.uint32(0),
+            cut = cms.string('RecoTauTag_antiElectronMVA_NoEleMatch_woGwoGSF_BL'),
+            variable = cms.string('pt')
+        ),
+        cms.PSet(
+            category = cms.uint32(2),
+            cut = cms.string('RecoTauTag_antiElectronMVA_NoEleMatch_wGwoGSF_BL'),
+            variable = cms.string('pt')
+        ),
+        cms.PSet(
+            category = cms.uint32(5),
+            cut = cms.string('RecoTauTag_antiElectronMVA_woGwGSF_BL'),
+            variable = cms.string('pt')
+        ),
+        cms.PSet(
+            category = cms.uint32(7),
+            cut = cms.string('RecoTauTag_antiElectronMVA_wGwGSF_BL'),
+            variable = cms.string('pt')
+        ),
+        cms.PSet(
+            category = cms.uint32(8),
+            cut = cms.string('RecoTauTag_antiElectronMVA_NoEleMatch_woGwoGSF_EC'),
+            variable = cms.string('pt')
+        ),
+        cms.PSet(
+            category = cms.uint32(10),
+            cut = cms.string('RecoTauTag_antiElectronMVA_NoEleMatch_wGwoGSF_EC'),
+            variable = cms.string('pt')
+        ),
+        cms.PSet(
+            category = cms.uint32(13),
+            cut = cms.string('RecoTauTag_antiElectronMVA_woGwGSF_EC'),
+            variable = cms.string('pt')
+        ),
+        cms.PSet(
+            category = cms.uint32(15),
+            cut = cms.string('RecoTauTag_antiElectronMVA_wGwGSF_EC'),
+            variable = cms.string('pt')
+        )
+    ),
+    mightGet = cms.optional.untracked.vstring,
+    mvaOutput_normalization = cms.string(''),
+    rawValues = cms.vstring(
+        'discriminator',
+        'category'
+    ),
+    toMultiplex = cms.InputTag("hpsPFTauDiscriminationByMVA6rawElectronRejectionLowPtElectronCleaned"),
+    verbosity = cms.int32(0),
+    workingPoints = cms.vstring(
+        '_VLoose',
+        '_Loose',
+        '_Medium',
+        '_Tight',
+        '_VTight'
+    )
+)
+
+
 process.hpsPFTauDiscriminationByMVA6ElectronRejectionMuonCleaned = cms.EDProducer("RecoTauDiscriminantCutMultiplexer",
     PFTauProducer = cms.InputTag("hpsPFTauProducerMuonCleaned"),
     Prediscriminants = cms.PSet(
@@ -6401,6 +7841,44 @@ process.hpsPFTauDiscriminationByMVA6rawElectronRejectionElectronCleaned = cms.ED
 )
 
 
+process.hpsPFTauDiscriminationByMVA6rawElectronRejectionLowPtElectronCleaned = cms.EDProducer("PFRecoTauDiscriminationAgainstElectronMVA6",
+    PFTauProducer = cms.InputTag("hpsPFTauProducerLowPtElectronCleaned"),
+    Prediscriminants = cms.PSet(
+        BooleanOperator = cms.string('and'),
+        decayMode = cms.PSet(
+            Producer = cms.InputTag("hpsPFTauDiscriminationByDecayModeFindingNewDMsLowPtElectronCleaned"),
+            cut = cms.double(0.5)
+        )
+    ),
+    hgcalElectronIDs = cms.VInputTag(),
+    isPhase2 = cms.bool(False),
+    loadMVAfromDB = cms.bool(True),
+    method = cms.string('BDTG'),
+    mightGet = cms.optional.untracked.vstring,
+    minMVANoEleMatchWOgWOgsfBL = cms.double(0),
+    minMVANoEleMatchWOgWOgsfEC = cms.double(0),
+    minMVANoEleMatchWgWOgsfBL = cms.double(0),
+    minMVANoEleMatchWgWOgsfEC = cms.double(0),
+    minMVAWOgWgsfBL = cms.double(0),
+    minMVAWOgWgsfEC = cms.double(0),
+    minMVAWgWgsfBL = cms.double(0),
+    minMVAWgWgsfEC = cms.double(0),
+    mvaName_NoEleMatch_wGwoGSF_BL = cms.string('RecoTauTag_antiElectronMVA_NoEleMatch_wGwoGSF_BL'),
+    mvaName_NoEleMatch_wGwoGSF_EC = cms.string('RecoTauTag_antiElectronMVA_NoEleMatch_wGwoGSF_EC'),
+    mvaName_NoEleMatch_woGwoGSF_BL = cms.string('RecoTauTag_antiElectronMVA_NoEleMatch_woGwoGSF_BL'),
+    mvaName_NoEleMatch_woGwoGSF_EC = cms.string('RecoTauTag_antiElectronMVA_NoEleMatch_woGwoGSF_EC'),
+    mvaName_wGwGSF_BL = cms.string('RecoTauTag_antiElectronMVA_wGwGSF_BL'),
+    mvaName_wGwGSF_EC = cms.string('RecoTauTag_antiElectronMVA_wGwGSF_EC'),
+    mvaName_woGwGSF_BL = cms.string('RecoTauTag_antiElectronMVA_woGwGSF_BL'),
+    mvaName_woGwGSF_EC = cms.string('RecoTauTag_antiElectronMVA_woGwGSF_EC'),
+    returnMVA = cms.bool(True),
+    srcElectrons = cms.InputTag("gedGsfElectrons"),
+    usePhiAtEcalEntranceExtrapolation = cms.bool(False),
+    verbosity = cms.int32(0),
+    vetoEcalCracks = cms.bool(False)
+)
+
+
 process.hpsPFTauDiscriminationByMVA6rawElectronRejectionMuonCleaned = cms.EDProducer("PFRecoTauDiscriminationAgainstElectronMVA6",
     PFTauProducer = cms.InputTag("hpsPFTauProducerMuonCleaned"),
     Prediscriminants = cms.PSet(
@@ -6547,6 +8025,42 @@ process.hpsPFTauDiscriminationByMediumElectronRejectionElectronCleaned = cms.EDP
 )
 
 
+process.hpsPFTauDiscriminationByMediumElectronRejectionLowPtElectronCleaned = cms.EDProducer("PFRecoTauDiscriminationAgainstElectron",
+    ApplyCut_BremCombined = cms.bool(False),
+    ApplyCut_BremsRecoveryEOverPLead = cms.bool(False),
+    ApplyCut_EOverPLead = cms.bool(False),
+    ApplyCut_EcalCrackCut = cms.bool(True),
+    ApplyCut_ElectronPreID = cms.bool(False),
+    ApplyCut_ElectronPreID_2D = cms.bool(False),
+    ApplyCut_EmFraction = cms.bool(False),
+    ApplyCut_Hcal3x3OverPLead = cms.bool(False),
+    ApplyCut_HcalMaxOverPLead = cms.bool(False),
+    ApplyCut_HcalTotOverPLead = cms.bool(False),
+    ApplyCut_PFElectronMVA = cms.bool(True),
+    BremCombined_Fraction = cms.double(0.99),
+    BremCombined_HOP = cms.double(0.1),
+    BremCombined_Mass = cms.double(0.55),
+    BremCombined_StripSize = cms.double(0.03),
+    BremsRecoveryEOverPLead_maxValue = cms.double(1.8),
+    BremsRecoveryEOverPLead_minValue = cms.double(0.8),
+    EOverPLead_maxValue = cms.double(1.8),
+    EOverPLead_minValue = cms.double(0.8),
+    ElecPreID0_EOverPLead_maxValue = cms.double(0.95),
+    ElecPreID0_HOverPLead_minValue = cms.double(0.05),
+    ElecPreID1_EOverPLead_maxValue = cms.double(0.8),
+    ElecPreID1_HOverPLead_minValue = cms.double(0.15),
+    EmFraction_maxValue = cms.double(0.9),
+    Hcal3x3OverPLead_minValue = cms.double(0.1),
+    HcalMaxOverPLead_minValue = cms.double(0.1),
+    HcalTotOverPLead_minValue = cms.double(0.1),
+    PFElectronMVA_maxValue = cms.double(-0.1),
+    PFTauProducer = cms.InputTag("hpsPFTauProducerLowPtElectronCleaned"),
+    Prediscriminants = cms.PSet(
+        BooleanOperator = cms.string('and')
+    )
+)
+
+
 process.hpsPFTauDiscriminationByMediumElectronRejectionMuonCleaned = cms.EDProducer("PFRecoTauDiscriminationAgainstElectron",
     ApplyCut_BremCombined = cms.bool(False),
     ApplyCut_BremsRecoveryEOverPLead = cms.bool(False),
@@ -6682,6 +8196,45 @@ process.hpsPFTauDiscriminationByMuonRejection3ElectronCleaned = cms.EDProducer("
     ),
     IDdefinitions = cms.VPSet(),
     PFTauProducer = cms.InputTag("hpsPFTauProducerElectronCleaned"),
+    Prediscriminants = cms.PSet(
+        BooleanOperator = cms.string('and')
+    ),
+    dRmuonMatch = cms.double(0.3),
+    dRmuonMatchLimitedToJetArea = cms.bool(False),
+    maskHitsCSC = cms.vint32(0, 0, 0, 0),
+    maskHitsDT = cms.vint32(0, 0, 0, 0),
+    maskHitsRPC = cms.vint32(0, 0, 0, 0),
+    maskMatchesCSC = cms.vint32(1, 0, 0, 0),
+    maskMatchesDT = cms.vint32(0, 0, 0, 0),
+    maskMatchesRPC = cms.vint32(0, 0, 0, 0),
+    mightGet = cms.optional.untracked.vstring,
+    minPtMatchedMuon = cms.double(5),
+    srcMuons = cms.InputTag("muons"),
+    verbosity = cms.int32(0)
+)
+
+
+process.hpsPFTauDiscriminationByMuonRejection3LowPtElectronCleaned = cms.EDProducer("PFRecoTauDiscriminationAgainstMuon2Container",
+    IDWPdefinitions = cms.VPSet(
+        cms.PSet(
+            HoPMin = cms.double(0.2),
+            IDname = cms.string('ByLooseMuonRejection3'),
+            discriminatorOption = cms.string('custom'),
+            doCaloMuonVeto = cms.bool(True),
+            maxNumberOfHitsLast2Stations = cms.int32(-1),
+            maxNumberOfMatches = cms.int32(1)
+        ),
+        cms.PSet(
+            HoPMin = cms.double(0.2),
+            IDname = cms.string('ByTightMuonRejection3'),
+            discriminatorOption = cms.string('custom'),
+            doCaloMuonVeto = cms.bool(True),
+            maxNumberOfHitsLast2Stations = cms.int32(0),
+            maxNumberOfMatches = cms.int32(1)
+        )
+    ),
+    IDdefinitions = cms.VPSet(),
+    PFTauProducer = cms.InputTag("hpsPFTauProducerLowPtElectronCleaned"),
     Prediscriminants = cms.PSet(
         BooleanOperator = cms.string('and')
     ),
@@ -6862,6 +8415,47 @@ process.hpsPFTauDiscriminationByMuonRejectionSimpleElectronCleaned = cms.EDProdu
 )
 
 
+process.hpsPFTauDiscriminationByMuonRejectionSimpleLowPtElectronCleaned = cms.EDProducer("PFRecoTauDiscriminationAgainstMuonSimple",
+    IDWPdefinitions = cms.VPSet(
+        cms.PSet(
+            HoPMin = cms.double(0.2),
+            IDname = cms.string('ByLooseMuonRejectionSimple'),
+            doCaloMuonVeto = cms.bool(True),
+            maxNumberOfHitsLast2Stations = cms.int32(-1),
+            maxNumberOfMatches = cms.int32(1),
+            maxNumberOfRPCMuons = cms.int32(-1),
+            maxNumberOfSTAMuons = cms.int32(-1)
+        ),
+        cms.PSet(
+            HoPMin = cms.double(0.2),
+            IDname = cms.string('ByTightMuonRejectionSimple'),
+            doCaloMuonVeto = cms.bool(True),
+            maxNumberOfHitsLast2Stations = cms.int32(0),
+            maxNumberOfMatches = cms.int32(1),
+            maxNumberOfRPCMuons = cms.int32(-1),
+            maxNumberOfSTAMuons = cms.int32(-1)
+        )
+    ),
+    IDdefinitions = cms.VPSet(),
+    PFTauProducer = cms.InputTag("hpsPFTauProducerLowPtElectronCleaned"),
+    Prediscriminants = cms.PSet(
+        BooleanOperator = cms.string('and')
+    ),
+    dRmuonMatch = cms.double(0.3),
+    dRmuonMatchLimitedToJetArea = cms.bool(False),
+    maskHitsCSC = cms.vint32(0, 0, 0, 0),
+    maskHitsDT = cms.vint32(0, 0, 0, 0),
+    maskHitsRPC = cms.vint32(0, 0, 0, 0),
+    maskMatchesCSC = cms.vint32(1, 0, 0, 0),
+    maskMatchesDT = cms.vint32(0, 0, 0, 0),
+    maskMatchesRPC = cms.vint32(0, 0, 0, 0),
+    mightGet = cms.optional.untracked.vstring,
+    minPtMatchedMuon = cms.double(5),
+    srcPatMuons = cms.InputTag("slimmedMuons"),
+    verbosity = cms.int32(0)
+)
+
+
 process.hpsPFTauDiscriminationByMuonRejectionSimpleMuonCleaned = cms.EDProducer("PFRecoTauDiscriminationAgainstMuonSimple",
     IDWPdefinitions = cms.VPSet(
         cms.PSet(
@@ -7005,6 +8599,42 @@ process.hpsPFTauDiscriminationByTightElectronRejectionElectronCleaned = cms.EDPr
     HcalTotOverPLead_minValue = cms.double(0.1),
     PFElectronMVA_maxValue = cms.double(-0.1),
     PFTauProducer = cms.InputTag("hpsPFTauProducerElectronCleaned"),
+    Prediscriminants = cms.PSet(
+        BooleanOperator = cms.string('and')
+    )
+)
+
+
+process.hpsPFTauDiscriminationByTightElectronRejectionLowPtElectronCleaned = cms.EDProducer("PFRecoTauDiscriminationAgainstElectron",
+    ApplyCut_BremCombined = cms.bool(True),
+    ApplyCut_BremsRecoveryEOverPLead = cms.bool(False),
+    ApplyCut_EOverPLead = cms.bool(False),
+    ApplyCut_EcalCrackCut = cms.bool(True),
+    ApplyCut_ElectronPreID = cms.bool(False),
+    ApplyCut_ElectronPreID_2D = cms.bool(False),
+    ApplyCut_EmFraction = cms.bool(False),
+    ApplyCut_Hcal3x3OverPLead = cms.bool(False),
+    ApplyCut_HcalMaxOverPLead = cms.bool(False),
+    ApplyCut_HcalTotOverPLead = cms.bool(False),
+    ApplyCut_PFElectronMVA = cms.bool(True),
+    BremCombined_Fraction = cms.double(0.99),
+    BremCombined_HOP = cms.double(0.1),
+    BremCombined_Mass = cms.double(0.55),
+    BremCombined_StripSize = cms.double(0.03),
+    BremsRecoveryEOverPLead_maxValue = cms.double(1.8),
+    BremsRecoveryEOverPLead_minValue = cms.double(0.8),
+    EOverPLead_maxValue = cms.double(1.8),
+    EOverPLead_minValue = cms.double(0.8),
+    ElecPreID0_EOverPLead_maxValue = cms.double(0.95),
+    ElecPreID0_HOverPLead_minValue = cms.double(0.05),
+    ElecPreID1_EOverPLead_maxValue = cms.double(0.8),
+    ElecPreID1_HOverPLead_minValue = cms.double(0.15),
+    EmFraction_maxValue = cms.double(0.9),
+    Hcal3x3OverPLead_minValue = cms.double(0.1),
+    HcalMaxOverPLead_minValue = cms.double(0.1),
+    HcalTotOverPLead_minValue = cms.double(0.1),
+    PFElectronMVA_maxValue = cms.double(-0.1),
+    PFTauProducer = cms.InputTag("hpsPFTauProducerLowPtElectronCleaned"),
     Prediscriminants = cms.PSet(
         BooleanOperator = cms.string('and')
     )
@@ -7228,6 +8858,67 @@ process.hpsPFTauPrimaryVertexProducerElectronCleaned = cms.EDProducer("PFTauMini
 )
 
 
+process.hpsPFTauPrimaryVertexProducerLowPtElectronCleaned = cms.EDProducer("PFTauMiniAODPrimaryVertexProducer",
+    Algorithm = cms.int32(0),
+    ElectronTag = cms.InputTag(""),
+    MuonTag = cms.InputTag(""),
+    PFTauTag = cms.InputTag("hpsPFTauProducerLowPtElectronCleaned"),
+    PVTag = cms.InputTag("offlineSlimmedPrimaryVertices"),
+    RemoveElectronTracks = cms.bool(False),
+    RemoveMuonTracks = cms.bool(False),
+    beamSpot = cms.InputTag("offlineBeamSpot"),
+    cut = cms.string('pt > 18.0 & abs(eta) < 2.4'),
+    discriminators = cms.VPSet(cms.PSet(
+        discriminator = cms.InputTag("hpsPFTauDiscriminationByDecayModeFindingNewDMsLowPtElectronCleaned"),
+        selectionCut = cms.double(0.5)
+    )),
+    lostCandidatesTag = cms.InputTag("lostTracks"),
+    mightGet = cms.optional.untracked.vstring,
+    packedCandidatesTag = cms.InputTag("PackedCandsLowPtElectronCleaned","packedPFCandidatesLowPtElectronCleaned"),
+    qualityCuts = cms.PSet(
+        isolationQualityCuts = cms.PSet(
+            maxDeltaZ = cms.double(0.2),
+            maxDeltaZToLeadTrack = cms.double(-1.0),
+            maxTrackChi2 = cms.double(100.0),
+            maxTransverseImpactParameter = cms.double(0.03),
+            minGammaEt = cms.double(1.5),
+            minTrackHits = cms.uint32(8),
+            minTrackPixelHits = cms.uint32(0),
+            minTrackPt = cms.double(1.0),
+            minTrackVertexWeight = cms.double(-1.0)
+        ),
+        leadingTrkOrPFCandOption = cms.string('leadPFCand'),
+        primaryVertexSrc = cms.InputTag("offlineSlimmedPrimaryVertices"),
+        pvFindingAlgo = cms.string('closestInDeltaZ'),
+        recoverLeadingTrk = cms.bool(False),
+        signalQualityCuts = cms.PSet(
+            maxDeltaZ = cms.double(0.4),
+            maxDeltaZToLeadTrack = cms.double(-1.0),
+            maxTrackChi2 = cms.double(100.0),
+            maxTransverseImpactParameter = cms.double(0.1),
+            minGammaEt = cms.double(1.0),
+            minNeutralHadronEt = cms.double(30.0),
+            minTrackHits = cms.uint32(3),
+            minTrackPixelHits = cms.uint32(0),
+            minTrackPt = cms.double(0.5),
+            minTrackVertexWeight = cms.double(-1.0)
+        ),
+        vertexTrackFiltering = cms.bool(False),
+        vxAssocQualityCuts = cms.PSet(
+            maxTrackChi2 = cms.double(100.0),
+            maxTransverseImpactParameter = cms.double(0.1),
+            minGammaEt = cms.double(1.0),
+            minTrackHits = cms.uint32(3),
+            minTrackPixelHits = cms.uint32(0),
+            minTrackPt = cms.double(0.5),
+            minTrackVertexWeight = cms.double(-1.0)
+        )
+    ),
+    useBeamSpot = cms.bool(True),
+    useSelectedTaus = cms.bool(False)
+)
+
+
 process.hpsPFTauPrimaryVertexProducerMuonCleaned = cms.EDProducer("PFTauMiniAODPrimaryVertexProducer",
     Algorithm = cms.int32(0),
     ElectronTag = cms.InputTag(""),
@@ -7301,6 +8992,11 @@ process.hpsPFTauProducerBoosted = cms.EDProducer("RecoTauPiZeroUnembedder",
 
 process.hpsPFTauProducerElectronCleaned = cms.EDProducer("RecoTauPiZeroUnembedder",
     src = cms.InputTag("hpsPFTauProducerSansRefsElectronCleaned")
+)
+
+
+process.hpsPFTauProducerLowPtElectronCleaned = cms.EDProducer("RecoTauPiZeroUnembedder",
+    src = cms.InputTag("hpsPFTauProducerSansRefsLowPtElectronCleaned")
 )
 
 
@@ -7483,6 +9179,64 @@ process.hpsPFTauProducerSansRefsElectronCleaned = cms.EDProducer("RecoTauCleaner
 )
 
 
+process.hpsPFTauProducerSansRefsLowPtElectronCleaned = cms.EDProducer("RecoTauCleaner",
+    cleaners = cms.VPSet(
+        cms.PSet(
+            name = cms.string('Charge'),
+            nprongs = cms.vuint32(1, 3),
+            passForCharge = cms.int32(1),
+            plugin = cms.string('RecoTauChargeCleanerPlugin'),
+            selectionFailValue = cms.double(0),
+            tolerance = cms.double(0)
+        ),
+        cms.PSet(
+            name = cms.string('HPS_Select'),
+            plugin = cms.string('RecoTauDiscriminantCleanerPlugin'),
+            src = cms.InputTag("hpsSelectionDiscriminatorLowPtElectronCleaned"),
+            tolerance = cms.double(0)
+        ),
+        cms.PSet(
+            minTrackPt = cms.double(5.0),
+            name = cms.string('killSoftTwoProngTaus'),
+            plugin = cms.string('RecoTauSoftTwoProngTausCleanerPlugin'),
+            tolerance = cms.double(0)
+        ),
+        cms.PSet(
+            name = cms.string('ChargedHadronMultiplicity'),
+            plugin = cms.string('RecoTauChargedHadronMultiplicityCleanerPlugin'),
+            tolerance = cms.double(0)
+        ),
+        cms.PSet(
+            name = cms.string('Pt'),
+            plugin = cms.string('RecoTauStringCleanerPlugin'),
+            selection = cms.string('leadCand().isNonnull()'),
+            selectionFailValue = cms.double(1000.0),
+            selectionPassFunction = cms.string('-pt()'),
+            tolerance = cms.double(0.01)
+        ),
+        cms.PSet(
+            name = cms.string('StripMultiplicity'),
+            plugin = cms.string('RecoTauStringCleanerPlugin'),
+            selection = cms.string('leadCand().isNonnull()'),
+            selectionFailValue = cms.double(1000.0),
+            selectionPassFunction = cms.string('-signalPiZeroCandidates().size()'),
+            tolerance = cms.double(0)
+        ),
+        cms.PSet(
+            name = cms.string('CombinedIsolation'),
+            plugin = cms.string('RecoTauStringCleanerPlugin'),
+            selection = cms.string('leadCand().isNonnull()'),
+            selectionFailValue = cms.double(1000.0),
+            selectionPassFunction = cms.string('isolationPFChargedHadrCandsPtSum() + isolationPFGammaCandsEtSum()'),
+            tolerance = cms.double(0)
+        )
+    ),
+    outputSelection = cms.string(''),
+    src = cms.InputTag("combinatoricRecoTausLowPtElectronCleaned"),
+    verbosity = cms.int32(0)
+)
+
+
 process.hpsPFTauProducerSansRefsMuonCleaned = cms.EDProducer("RecoTauCleaner",
     cleaners = cms.VPSet(
         cms.PSet(
@@ -7556,6 +9310,11 @@ process.hpsPFTauSecondaryVertexProducerElectronCleaned = cms.EDProducer("PFTauSe
 )
 
 
+process.hpsPFTauSecondaryVertexProducerLowPtElectronCleaned = cms.EDProducer("PFTauSecondaryVertexProducer",
+    PFTauTag = cms.InputTag("hpsPFTauProducerLowPtElectronCleaned")
+)
+
+
 process.hpsPFTauSecondaryVertexProducerMuonCleaned = cms.EDProducer("PFTauSecondaryVertexProducer",
     PFTauTag = cms.InputTag("hpsPFTauProducerMuonCleaned")
 )
@@ -7581,6 +9340,14 @@ process.hpsPFTauTransverseImpactParametersElectronCleaned = cms.EDProducer("PFTa
     PFTauPVATag = cms.InputTag("hpsPFTauPrimaryVertexProducerElectronCleaned"),
     PFTauSVATag = cms.InputTag("hpsPFTauSecondaryVertexProducerElectronCleaned"),
     PFTauTag = cms.InputTag("hpsPFTauProducerElectronCleaned"),
+    useFullCalculation = cms.bool(True)
+)
+
+
+process.hpsPFTauTransverseImpactParametersLowPtElectronCleaned = cms.EDProducer("PFTauTransverseImpactParameters",
+    PFTauPVATag = cms.InputTag("hpsPFTauPrimaryVertexProducerLowPtElectronCleaned"),
+    PFTauSVATag = cms.InputTag("hpsPFTauSecondaryVertexProducerLowPtElectronCleaned"),
+    PFTauTag = cms.InputTag("hpsPFTauProducerLowPtElectronCleaned"),
     useFullCalculation = cms.bool(True)
 )
 
@@ -7849,6 +9616,133 @@ process.hpsSelectionDiscriminatorBoosted = cms.EDProducer("PFRecoTauDiscriminati
 
 process.hpsSelectionDiscriminatorElectronCleaned = cms.EDProducer("PFRecoTauDiscriminationByHPSSelection",
     PFTauProducer = cms.InputTag("combinatoricRecoTausElectronCleaned"),
+    Prediscriminants = cms.PSet(
+        BooleanOperator = cms.string('and')
+    ),
+    decayModes = cms.VPSet(
+        cms.PSet(
+            applyBendCorrection = cms.PSet(
+                eta = cms.bool(True),
+                mass = cms.bool(True),
+                phi = cms.bool(True)
+            ),
+            assumeStripMass = cms.double(-1.0),
+            maxMass = cms.string('1.'),
+            maxPi0Mass = cms.double(1000000000.0),
+            minMass = cms.double(-1000.0),
+            minPi0Mass = cms.double(-1000.0),
+            nCharged = cms.uint32(1),
+            nChargedPFCandsMin = cms.uint32(1),
+            nPiZeros = cms.uint32(0),
+            nTracksMin = cms.uint32(1)
+        ),
+        cms.PSet(
+            applyBendCorrection = cms.PSet(
+                eta = cms.bool(True),
+                mass = cms.bool(True),
+                phi = cms.bool(True)
+            ),
+            assumeStripMass = cms.double(0.1349),
+            maxMass = cms.string('max(1.3, min(1.3*sqrt(pt/100.), 4.2))'),
+            maxPi0Mass = cms.double(1000000000.0),
+            minMass = cms.double(0.3),
+            minPi0Mass = cms.double(-1000.0),
+            nCharged = cms.uint32(1),
+            nChargedPFCandsMin = cms.uint32(1),
+            nPiZeros = cms.uint32(1),
+            nTracksMin = cms.uint32(1)
+        ),
+        cms.PSet(
+            applyBendCorrection = cms.PSet(
+                eta = cms.bool(True),
+                mass = cms.bool(True),
+                phi = cms.bool(True)
+            ),
+            assumeStripMass = cms.double(0.0),
+            maxMass = cms.string('max(1.2, min(1.2*sqrt(pt/100.), 4.0))'),
+            maxPi0Mass = cms.double(0.2),
+            minMass = cms.double(0.4),
+            minPi0Mass = cms.double(0.05),
+            nCharged = cms.uint32(1),
+            nChargedPFCandsMin = cms.uint32(1),
+            nPiZeros = cms.uint32(2),
+            nTracksMin = cms.uint32(1)
+        ),
+        cms.PSet(
+            applyBendCorrection = cms.PSet(
+                eta = cms.bool(False),
+                mass = cms.bool(False),
+                phi = cms.bool(False)
+            ),
+            assumeStripMass = cms.double(-1.0),
+            maxMass = cms.string('1.2'),
+            maxPi0Mass = cms.double(1000000000.0),
+            minMass = cms.double(0.0),
+            minPi0Mass = cms.double(-1000.0),
+            nCharged = cms.uint32(2),
+            nChargedPFCandsMin = cms.uint32(1),
+            nPiZeros = cms.uint32(0),
+            nTracksMin = cms.uint32(2)
+        ),
+        cms.PSet(
+            applyBendCorrection = cms.PSet(
+                eta = cms.bool(False),
+                mass = cms.bool(False),
+                phi = cms.bool(False)
+            ),
+            assumeStripMass = cms.double(-1.0),
+            maxMass = cms.string('max(1.2, min(1.2*sqrt(pt/100.), 4.0))'),
+            maxPi0Mass = cms.double(1000000000.0),
+            minMass = cms.double(0.0),
+            minPi0Mass = cms.double(-1000.0),
+            nCharged = cms.uint32(2),
+            nChargedPFCandsMin = cms.uint32(1),
+            nPiZeros = cms.uint32(1),
+            nTracksMin = cms.uint32(2)
+        ),
+        cms.PSet(
+            applyBendCorrection = cms.PSet(
+                eta = cms.bool(False),
+                mass = cms.bool(False),
+                phi = cms.bool(False)
+            ),
+            assumeStripMass = cms.double(-1.0),
+            maxMass = cms.string('1.5'),
+            maxPi0Mass = cms.double(1000000000.0),
+            minMass = cms.double(0.8),
+            minPi0Mass = cms.double(-1000.0),
+            nCharged = cms.uint32(3),
+            nChargedPFCandsMin = cms.uint32(1),
+            nPiZeros = cms.uint32(0),
+            nTracksMin = cms.uint32(2)
+        ),
+        cms.PSet(
+            applyBendCorrection = cms.PSet(
+                eta = cms.bool(False),
+                mass = cms.bool(False),
+                phi = cms.bool(False)
+            ),
+            assumeStripMass = cms.double(-1.0),
+            maxMass = cms.string('1.6'),
+            maxPi0Mass = cms.double(1000000000.0),
+            minMass = cms.double(0.9),
+            minPi0Mass = cms.double(-1000.0),
+            nCharged = cms.uint32(3),
+            nChargedPFCandsMin = cms.uint32(1),
+            nPiZeros = cms.uint32(1),
+            nTracksMin = cms.uint32(2)
+        )
+    ),
+    matchingCone = cms.double(0.5),
+    minPixelHits = cms.int32(1),
+    minTauPt = cms.double(0.0),
+    requireTauChargedHadronsToBeChargedPFCands = cms.bool(False),
+    verbosity = cms.int32(0)
+)
+
+
+process.hpsSelectionDiscriminatorLowPtElectronCleaned = cms.EDProducer("PFRecoTauDiscriminationByHPSSelection",
+    PFTauProducer = cms.InputTag("combinatoricRecoTausLowPtElectronCleaned"),
     Prediscriminants = cms.PSet(
         BooleanOperator = cms.string('and')
     ),
@@ -8255,6 +10149,64 @@ process.patJetsPATElectronCleaned = cms.EDProducer("PATJetProducer",
 )
 
 
+process.patJetsPATLowPtElectronCleaned = cms.EDProducer("PATJetProducer",
+    JetFlavourInfoSource = cms.InputTag("patJetFlavourAssociation"),
+    JetPartonMapSource = cms.InputTag("patJetFlavourAssociationLegacy"),
+    addAssociatedTracks = cms.bool(False),
+    addBTagInfo = cms.bool(False),
+    addDiscriminators = cms.bool(False),
+    addEfficiencies = cms.bool(False),
+    addGenJetMatch = cms.bool(False),
+    addGenPartonMatch = cms.bool(False),
+    addJetCharge = cms.bool(False),
+    addJetCorrFactors = cms.bool(False),
+    addJetFlavourInfo = cms.bool(False),
+    addJetID = cms.bool(False),
+    addPartonJetMatch = cms.bool(False),
+    addResolutions = cms.bool(False),
+    addTagInfos = cms.bool(False),
+    discriminatorSources = cms.VInputTag(),
+    efficiencies = cms.PSet(
+
+    ),
+    embedCaloTowers = cms.bool(False),
+    embedGenJetMatch = cms.bool(True),
+    embedGenPartonMatch = cms.bool(False),
+    embedPFCandidates = cms.bool(False),
+    genJetMatch = cms.InputTag("patJetGenJetMatch"),
+    genPartonMatch = cms.InputTag("patJetPartonMatch"),
+    getJetMCFlavour = cms.bool(False),
+    jetChargeSource = cms.InputTag("patJetCharge"),
+    jetCorrFactorsSource = cms.VInputTag(),
+    jetIDMap = cms.InputTag("ak4JetID"),
+    jetSource = cms.InputTag("ak4PFJetsPATLowPtElectronCleaned"),
+    mightGet = cms.optional.untracked.vstring,
+    partonJetSource = cms.InputTag("NOT_IMPLEMENTED"),
+    resolutions = cms.PSet(
+
+    ),
+    tagInfoSources = cms.VInputTag(),
+    trackAssociationSource = cms.InputTag("ak4JetTracksAssociatorAtVertexPF"),
+    useLegacyJetMCFlavour = cms.bool(False),
+    userData = cms.PSet(
+        userCands = cms.PSet(
+            src = cms.VInputTag("")
+        ),
+        userClasses = cms.PSet(
+            src = cms.VInputTag("")
+        ),
+        userFloats = cms.PSet(
+            src = cms.VInputTag("")
+        ),
+        userFunctionLabels = cms.vstring(),
+        userFunctions = cms.vstring(),
+        userInts = cms.PSet(
+            src = cms.VInputTag("")
+        )
+    )
+)
+
+
 process.patJetsPATMuonCleaned = cms.EDProducer("PATJetProducer",
     JetFlavourInfoSource = cms.InputTag("patJetFlavourAssociation"),
     JetPartonMapSource = cms.InputTag("patJetFlavourAssociationLegacy"),
@@ -8499,6 +10451,68 @@ process.patTauDiscriminationByElectronRejectionMVA62018ElectronCleaned = cms.EDP
 )
 
 
+process.patTauDiscriminationByElectronRejectionMVA62018LowPtElectronCleaned = cms.EDProducer("PATTauDiscriminantCutMultiplexer",
+    PATTauProducer = cms.InputTag("selectedPatTausNoNewIDsLowPtElectronCleaned"),
+    Prediscriminants = cms.PSet(
+        BooleanOperator = cms.string('and')
+    ),
+    inputFileName = cms.FileInPath('RecoTauTag/RecoTau/data/emptyMVAinputFile'),
+    loadMVAfromDB = cms.bool(True),
+    mapping = cms.VPSet(
+        cms.PSet(
+            category = cms.uint32(0),
+            cut = cms.string('RecoTauTag_antiElectronMVA6v3_noeveto_gbr_NoEleMatch_woGwoGSF_BL'),
+            variable = cms.string('pt')
+        ),
+        cms.PSet(
+            category = cms.uint32(2),
+            cut = cms.string('RecoTauTag_antiElectronMVA6v3_noeveto_gbr_NoEleMatch_wGwoGSF_BL'),
+            variable = cms.string('pt')
+        ),
+        cms.PSet(
+            category = cms.uint32(5),
+            cut = cms.string('RecoTauTag_antiElectronMVA6v3_noeveto_gbr_woGwGSF_BL'),
+            variable = cms.string('pt')
+        ),
+        cms.PSet(
+            category = cms.uint32(7),
+            cut = cms.string('RecoTauTag_antiElectronMVA6v3_noeveto_gbr_wGwGSF_BL'),
+            variable = cms.string('pt')
+        ),
+        cms.PSet(
+            category = cms.uint32(8),
+            cut = cms.string('RecoTauTag_antiElectronMVA6v3_noeveto_gbr_NoEleMatch_woGwoGSF_EC'),
+            variable = cms.string('pt')
+        ),
+        cms.PSet(
+            category = cms.uint32(10),
+            cut = cms.string('RecoTauTag_antiElectronMVA6v3_noeveto_gbr_NoEleMatch_wGwoGSF_EC'),
+            variable = cms.string('pt')
+        ),
+        cms.PSet(
+            category = cms.uint32(13),
+            cut = cms.string('RecoTauTag_antiElectronMVA6v3_noeveto_gbr_woGwGSF_EC'),
+            variable = cms.string('pt')
+        ),
+        cms.PSet(
+            category = cms.uint32(15),
+            cut = cms.string('RecoTauTag_antiElectronMVA6v3_noeveto_gbr_wGwGSF_EC'),
+            variable = cms.string('pt')
+        )
+    ),
+    mvaOutput_normalization = cms.string(''),
+    toMultiplex = cms.InputTag("patTauDiscriminationByElectronRejectionMVA62018RawLowPtElectronCleaned"),
+    verbosity = cms.int32(0),
+    workingPoints = cms.vstring(
+        '_WPeff98',
+        '_WPeff90',
+        '_WPeff80',
+        '_WPeff70',
+        '_WPeff60'
+    )
+)
+
+
 process.patTauDiscriminationByElectronRejectionMVA62018MuonCleaned = cms.EDProducer("PATTauDiscriminantCutMultiplexer",
     PATTauProducer = cms.InputTag("selectedPatTausNoNewIDsMuonCleaned"),
     Prediscriminants = cms.PSet(
@@ -8629,6 +10643,39 @@ process.patTauDiscriminationByElectronRejectionMVA62018RawBoosted = cms.EDProduc
 
 process.patTauDiscriminationByElectronRejectionMVA62018RawElectronCleaned = cms.EDProducer("PATTauDiscriminationAgainstElectronMVA6",
     PATTauProducer = cms.InputTag("selectedPatTausNoNewIDsElectronCleaned"),
+    Prediscriminants = cms.PSet(
+        BooleanOperator = cms.string('and')
+    ),
+    isPhase2 = cms.bool(False),
+    loadMVAfromDB = cms.bool(True),
+    method = cms.string('BDTG'),
+    mightGet = cms.optional.untracked.vstring,
+    minMVANoEleMatchWOgWOgsfBL = cms.double(0),
+    minMVANoEleMatchWOgWOgsfEC = cms.double(0),
+    minMVANoEleMatchWgWOgsfBL = cms.double(0),
+    minMVANoEleMatchWgWOgsfEC = cms.double(0),
+    minMVAWOgWgsfBL = cms.double(0),
+    minMVAWOgWgsfEC = cms.double(0),
+    minMVAWgWgsfBL = cms.double(0),
+    minMVAWgWgsfEC = cms.double(0),
+    mvaName_NoEleMatch_wGwoGSF_BL = cms.string('RecoTauTag_antiElectronMVA6v3_noeveto_gbr_NoEleMatch_wGwoGSF_BL'),
+    mvaName_NoEleMatch_wGwoGSF_EC = cms.string('RecoTauTag_antiElectronMVA6v3_noeveto_gbr_NoEleMatch_wGwoGSF_EC'),
+    mvaName_NoEleMatch_woGwoGSF_BL = cms.string('RecoTauTag_antiElectronMVA6v3_noeveto_gbr_NoEleMatch_woGwoGSF_BL'),
+    mvaName_NoEleMatch_woGwoGSF_EC = cms.string('RecoTauTag_antiElectronMVA6v3_noeveto_gbr_NoEleMatch_woGwoGSF_EC'),
+    mvaName_wGwGSF_BL = cms.string('RecoTauTag_antiElectronMVA6v3_noeveto_gbr_wGwGSF_BL'),
+    mvaName_wGwGSF_EC = cms.string('RecoTauTag_antiElectronMVA6v3_noeveto_gbr_wGwGSF_EC'),
+    mvaName_woGwGSF_BL = cms.string('RecoTauTag_antiElectronMVA6v3_noeveto_gbr_woGwGSF_BL'),
+    mvaName_woGwGSF_EC = cms.string('RecoTauTag_antiElectronMVA6v3_noeveto_gbr_woGwGSF_EC'),
+    returnMVA = cms.bool(True),
+    srcElectrons = cms.InputTag("slimmedElectrons"),
+    usePhiAtEcalEntranceExtrapolation = cms.bool(False),
+    verbosity = cms.int32(0),
+    vetoEcalCracks = cms.bool(False)
+)
+
+
+process.patTauDiscriminationByElectronRejectionMVA62018RawLowPtElectronCleaned = cms.EDProducer("PATTauDiscriminationAgainstElectronMVA6",
+    PATTauProducer = cms.InputTag("selectedPatTausNoNewIDsLowPtElectronCleaned"),
     Prediscriminants = cms.PSet(
         BooleanOperator = cms.string('and')
     ),
@@ -9554,6 +11601,293 @@ process.patTausElectronCleaned = cms.EDProducer("PATTauProducer",
 )
 
 
+process.patTausLowPtElectronCleaned = cms.EDProducer("PATTauProducer",
+    addEfficiencies = cms.bool(False),
+    addGenJetMatch = cms.bool(True),
+    addGenMatch = cms.bool(True),
+    addResolutions = cms.bool(False),
+    addTauID = cms.bool(True),
+    addTauJetCorrFactors = cms.bool(False),
+    efficiencies = cms.PSet(
+
+    ),
+    embedGenJetMatch = cms.bool(True),
+    embedGenMatch = cms.bool(True),
+    embedIsolationPFCands = cms.bool(False),
+    embedIsolationPFChargedHadrCands = cms.bool(False),
+    embedIsolationPFGammaCands = cms.bool(False),
+    embedIsolationPFNeutralHadrCands = cms.bool(False),
+    embedIsolationTracks = cms.bool(False),
+    embedLeadPFCand = cms.bool(False),
+    embedLeadPFChargedHadrCand = cms.bool(False),
+    embedLeadPFNeutralCand = cms.bool(False),
+    embedLeadTrack = cms.bool(False),
+    embedSignalPFCands = cms.bool(False),
+    embedSignalPFChargedHadrCands = cms.bool(False),
+    embedSignalPFGammaCands = cms.bool(False),
+    embedSignalPFNeutralHadrCands = cms.bool(False),
+    embedSignalTracks = cms.bool(False),
+    genJetMatch = cms.InputTag("tauGenJetMatchLowPtElectronCleaned"),
+    genParticleMatch = cms.InputTag("tauMatchLowPtElectronCleaned"),
+    isoDeposits = cms.PSet(
+
+    ),
+    resolutions = cms.PSet(
+
+    ),
+    skipMissingTauID = cms.bool(False),
+    tauIDSources = cms.PSet(
+        againstElectronDeadECAL = cms.PSet(
+            idLabel = cms.string(''),
+            inputTag = cms.InputTag("hpsPFTauDiscriminationByDeadECALElectronRejectionLowPtElectronCleaned"),
+            provenanceConfigLabel = cms.string('')
+        ),
+        againstMuonLooseSimple = cms.PSet(
+            idLabel = cms.string('ByLooseMuonRejectionSimple'),
+            inputTag = cms.InputTag("hpsPFTauDiscriminationByMuonRejectionSimpleLowPtElectronCleaned"),
+            provenanceConfigLabel = cms.string('IDWPdefinitions')
+        ),
+        againstMuonTightSimple = cms.PSet(
+            idLabel = cms.string('ByTightMuonRejectionSimple'),
+            inputTag = cms.InputTag("hpsPFTauDiscriminationByMuonRejectionSimpleLowPtElectronCleaned"),
+            provenanceConfigLabel = cms.string('IDWPdefinitions')
+        ),
+        byCombinedIsolationDeltaBetaCorrRaw3Hits = cms.PSet(
+            idLabel = cms.string('ByRawCombinedIsolationDBSumPtCorr3Hits'),
+            inputTag = cms.InputTag("hpsPFTauBasicDiscriminatorsLowPtElectronCleaned"),
+            provenanceConfigLabel = cms.string('IDdefinitions')
+        ),
+        byIsolationMVArun2v1DBdR03oldDMwLTraw = cms.PSet(
+            idLabel = cms.string('discriminator'),
+            inputTag = cms.InputTag("hpsPFTauDiscriminationByIsolationMVArun2v1DBdR03oldDMwLTLowPtElectronCleaned"),
+            provenanceConfigLabel = cms.string('rawValues')
+        ),
+        byIsolationMVArun2v1DBnewDMwLTraw = cms.PSet(
+            idLabel = cms.string('discriminator'),
+            inputTag = cms.InputTag("hpsPFTauDiscriminationByIsolationMVArun2v1DBnewDMwLTLowPtElectronCleaned"),
+            provenanceConfigLabel = cms.string('rawValues')
+        ),
+        byIsolationMVArun2v1DBoldDMwLTraw = cms.PSet(
+            idLabel = cms.string('discriminator'),
+            inputTag = cms.InputTag("hpsPFTauDiscriminationByIsolationMVArun2v1DBoldDMwLTLowPtElectronCleaned"),
+            provenanceConfigLabel = cms.string('rawValues')
+        ),
+        byLooseCombinedIsolationDeltaBetaCorr3Hits = cms.PSet(
+            idLabel = cms.string('ByLooseCombinedIsolationDBSumPtCorr3Hits'),
+            inputTag = cms.InputTag("hpsPFTauBasicDiscriminatorsLowPtElectronCleaned"),
+            provenanceConfigLabel = cms.string('IDWPdefinitions')
+        ),
+        byLooseIsolationMVArun2v1DBdR03oldDMwLT = cms.PSet(
+            idLabel = cms.string('_Loose'),
+            inputTag = cms.InputTag("hpsPFTauDiscriminationByIsolationMVArun2v1DBdR03oldDMwLTLowPtElectronCleaned"),
+            provenanceConfigLabel = cms.string('workingPoints')
+        ),
+        byLooseIsolationMVArun2v1DBnewDMwLT = cms.PSet(
+            idLabel = cms.string('_Loose'),
+            inputTag = cms.InputTag("hpsPFTauDiscriminationByIsolationMVArun2v1DBnewDMwLTLowPtElectronCleaned"),
+            provenanceConfigLabel = cms.string('workingPoints')
+        ),
+        byLooseIsolationMVArun2v1DBoldDMwLT = cms.PSet(
+            idLabel = cms.string('_Loose'),
+            inputTag = cms.InputTag("hpsPFTauDiscriminationByIsolationMVArun2v1DBoldDMwLTLowPtElectronCleaned"),
+            provenanceConfigLabel = cms.string('workingPoints')
+        ),
+        byMediumCombinedIsolationDeltaBetaCorr3Hits = cms.PSet(
+            idLabel = cms.string('ByMediumCombinedIsolationDBSumPtCorr3Hits'),
+            inputTag = cms.InputTag("hpsPFTauBasicDiscriminatorsLowPtElectronCleaned"),
+            provenanceConfigLabel = cms.string('IDWPdefinitions')
+        ),
+        byMediumIsolationMVArun2v1DBdR03oldDMwLT = cms.PSet(
+            idLabel = cms.string('_Medium'),
+            inputTag = cms.InputTag("hpsPFTauDiscriminationByIsolationMVArun2v1DBdR03oldDMwLTLowPtElectronCleaned"),
+            provenanceConfigLabel = cms.string('workingPoints')
+        ),
+        byMediumIsolationMVArun2v1DBnewDMwLT = cms.PSet(
+            idLabel = cms.string('_Medium'),
+            inputTag = cms.InputTag("hpsPFTauDiscriminationByIsolationMVArun2v1DBnewDMwLTLowPtElectronCleaned"),
+            provenanceConfigLabel = cms.string('workingPoints')
+        ),
+        byMediumIsolationMVArun2v1DBoldDMwLT = cms.PSet(
+            idLabel = cms.string('_Medium'),
+            inputTag = cms.InputTag("hpsPFTauDiscriminationByIsolationMVArun2v1DBoldDMwLTLowPtElectronCleaned"),
+            provenanceConfigLabel = cms.string('workingPoints')
+        ),
+        byPhotonPtSumOutsideSignalCone = cms.PSet(
+            idLabel = cms.string('ByPhotonPtSumOutsideSignalCone'),
+            inputTag = cms.InputTag("hpsPFTauBasicDiscriminatorsLowPtElectronCleaned"),
+            provenanceConfigLabel = cms.string('IDWPdefinitions')
+        ),
+        byTightCombinedIsolationDeltaBetaCorr3Hits = cms.PSet(
+            idLabel = cms.string('ByTightCombinedIsolationDBSumPtCorr3Hits'),
+            inputTag = cms.InputTag("hpsPFTauBasicDiscriminatorsLowPtElectronCleaned"),
+            provenanceConfigLabel = cms.string('IDWPdefinitions')
+        ),
+        byTightIsolationMVArun2v1DBdR03oldDMwLT = cms.PSet(
+            idLabel = cms.string('_Tight'),
+            inputTag = cms.InputTag("hpsPFTauDiscriminationByIsolationMVArun2v1DBdR03oldDMwLTLowPtElectronCleaned"),
+            provenanceConfigLabel = cms.string('workingPoints')
+        ),
+        byTightIsolationMVArun2v1DBnewDMwLT = cms.PSet(
+            idLabel = cms.string('_Tight'),
+            inputTag = cms.InputTag("hpsPFTauDiscriminationByIsolationMVArun2v1DBnewDMwLTLowPtElectronCleaned"),
+            provenanceConfigLabel = cms.string('workingPoints')
+        ),
+        byTightIsolationMVArun2v1DBoldDMwLT = cms.PSet(
+            idLabel = cms.string('_Tight'),
+            inputTag = cms.InputTag("hpsPFTauDiscriminationByIsolationMVArun2v1DBoldDMwLTLowPtElectronCleaned"),
+            provenanceConfigLabel = cms.string('workingPoints')
+        ),
+        byVLooseIsolationMVArun2v1DBdR03oldDMwLT = cms.PSet(
+            idLabel = cms.string('_VLoose'),
+            inputTag = cms.InputTag("hpsPFTauDiscriminationByIsolationMVArun2v1DBdR03oldDMwLTLowPtElectronCleaned"),
+            provenanceConfigLabel = cms.string('workingPoints')
+        ),
+        byVLooseIsolationMVArun2v1DBnewDMwLT = cms.PSet(
+            idLabel = cms.string('_VLoose'),
+            inputTag = cms.InputTag("hpsPFTauDiscriminationByIsolationMVArun2v1DBnewDMwLTLowPtElectronCleaned"),
+            provenanceConfigLabel = cms.string('workingPoints')
+        ),
+        byVLooseIsolationMVArun2v1DBoldDMwLT = cms.PSet(
+            idLabel = cms.string('_VLoose'),
+            inputTag = cms.InputTag("hpsPFTauDiscriminationByIsolationMVArun2v1DBoldDMwLTLowPtElectronCleaned"),
+            provenanceConfigLabel = cms.string('workingPoints')
+        ),
+        byVTightIsolationMVArun2v1DBdR03oldDMwLT = cms.PSet(
+            idLabel = cms.string('_VTight'),
+            inputTag = cms.InputTag("hpsPFTauDiscriminationByIsolationMVArun2v1DBdR03oldDMwLTLowPtElectronCleaned"),
+            provenanceConfigLabel = cms.string('workingPoints')
+        ),
+        byVTightIsolationMVArun2v1DBnewDMwLT = cms.PSet(
+            idLabel = cms.string('_VTight'),
+            inputTag = cms.InputTag("hpsPFTauDiscriminationByIsolationMVArun2v1DBnewDMwLTLowPtElectronCleaned"),
+            provenanceConfigLabel = cms.string('workingPoints')
+        ),
+        byVTightIsolationMVArun2v1DBoldDMwLT = cms.PSet(
+            idLabel = cms.string('_VTight'),
+            inputTag = cms.InputTag("hpsPFTauDiscriminationByIsolationMVArun2v1DBoldDMwLTLowPtElectronCleaned"),
+            provenanceConfigLabel = cms.string('workingPoints')
+        ),
+        byVVLooseIsolationMVArun2v1DBdR03oldDMwLT = cms.PSet(
+            idLabel = cms.string('_VVLoose'),
+            inputTag = cms.InputTag("hpsPFTauDiscriminationByIsolationMVArun2v1DBdR03oldDMwLTLowPtElectronCleaned"),
+            provenanceConfigLabel = cms.string('workingPoints')
+        ),
+        byVVLooseIsolationMVArun2v1DBnewDMwLT = cms.PSet(
+            idLabel = cms.string('_VVLoose'),
+            inputTag = cms.InputTag("hpsPFTauDiscriminationByIsolationMVArun2v1DBnewDMwLTLowPtElectronCleaned"),
+            provenanceConfigLabel = cms.string('workingPoints')
+        ),
+        byVVLooseIsolationMVArun2v1DBoldDMwLT = cms.PSet(
+            idLabel = cms.string('_VVLoose'),
+            inputTag = cms.InputTag("hpsPFTauDiscriminationByIsolationMVArun2v1DBoldDMwLTLowPtElectronCleaned"),
+            provenanceConfigLabel = cms.string('workingPoints')
+        ),
+        byVVTightIsolationMVArun2v1DBdR03oldDMwLT = cms.PSet(
+            idLabel = cms.string('_VVTight'),
+            inputTag = cms.InputTag("hpsPFTauDiscriminationByIsolationMVArun2v1DBdR03oldDMwLTLowPtElectronCleaned"),
+            provenanceConfigLabel = cms.string('workingPoints')
+        ),
+        byVVTightIsolationMVArun2v1DBnewDMwLT = cms.PSet(
+            idLabel = cms.string('_VVTight'),
+            inputTag = cms.InputTag("hpsPFTauDiscriminationByIsolationMVArun2v1DBnewDMwLTLowPtElectronCleaned"),
+            provenanceConfigLabel = cms.string('workingPoints')
+        ),
+        byVVTightIsolationMVArun2v1DBoldDMwLT = cms.PSet(
+            idLabel = cms.string('_VVTight'),
+            inputTag = cms.InputTag("hpsPFTauDiscriminationByIsolationMVArun2v1DBoldDMwLTLowPtElectronCleaned"),
+            provenanceConfigLabel = cms.string('workingPoints')
+        ),
+        chargedIsoPtSum = cms.PSet(
+            idLabel = cms.string('ChargedIsoPtSum'),
+            inputTag = cms.InputTag("hpsPFTauBasicDiscriminatorsLowPtElectronCleaned"),
+            provenanceConfigLabel = cms.string('IDdefinitions')
+        ),
+        chargedIsoPtSumdR03 = cms.PSet(
+            idLabel = cms.string('ChargedIsoPtSumdR03'),
+            inputTag = cms.InputTag("hpsPFTauBasicDiscriminatorsdR03LowPtElectronCleaned"),
+            provenanceConfigLabel = cms.string('IDdefinitions')
+        ),
+        decayModeFinding = cms.PSet(
+            idLabel = cms.string(''),
+            inputTag = cms.InputTag("hpsPFTauDiscriminationByDecayModeFindingLowPtElectronCleaned"),
+            provenanceConfigLabel = cms.string('')
+        ),
+        decayModeFindingNewDMs = cms.PSet(
+            idLabel = cms.string(''),
+            inputTag = cms.InputTag("hpsPFTauDiscriminationByDecayModeFindingNewDMsLowPtElectronCleaned"),
+            provenanceConfigLabel = cms.string('')
+        ),
+        footprintCorrection = cms.PSet(
+            idLabel = cms.string('TauFootprintCorrection'),
+            inputTag = cms.InputTag("hpsPFTauBasicDiscriminatorsLowPtElectronCleaned"),
+            provenanceConfigLabel = cms.string('IDdefinitions')
+        ),
+        footprintCorrectiondR03 = cms.PSet(
+            idLabel = cms.string('TauFootprintCorrectiondR03'),
+            inputTag = cms.InputTag("hpsPFTauBasicDiscriminatorsdR03LowPtElectronCleaned"),
+            provenanceConfigLabel = cms.string('IDdefinitions')
+        ),
+        neutralIsoPtSum = cms.PSet(
+            idLabel = cms.string('NeutralIsoPtSum'),
+            inputTag = cms.InputTag("hpsPFTauBasicDiscriminatorsLowPtElectronCleaned"),
+            provenanceConfigLabel = cms.string('IDdefinitions')
+        ),
+        neutralIsoPtSumWeight = cms.PSet(
+            idLabel = cms.string('NeutralIsoPtSumWeight'),
+            inputTag = cms.InputTag("hpsPFTauBasicDiscriminatorsLowPtElectronCleaned"),
+            provenanceConfigLabel = cms.string('IDdefinitions')
+        ),
+        neutralIsoPtSumWeightdR03 = cms.PSet(
+            idLabel = cms.string('NeutralIsoPtSumWeightdR03'),
+            inputTag = cms.InputTag("hpsPFTauBasicDiscriminatorsdR03LowPtElectronCleaned"),
+            provenanceConfigLabel = cms.string('IDdefinitions')
+        ),
+        neutralIsoPtSumdR03 = cms.PSet(
+            idLabel = cms.string('NeutralIsoPtSumdR03'),
+            inputTag = cms.InputTag("hpsPFTauBasicDiscriminatorsdR03LowPtElectronCleaned"),
+            provenanceConfigLabel = cms.string('IDdefinitions')
+        ),
+        photonPtSumOutsideSignalCone = cms.PSet(
+            idLabel = cms.string('PhotonPtSumOutsideSignalCone'),
+            inputTag = cms.InputTag("hpsPFTauBasicDiscriminatorsLowPtElectronCleaned"),
+            provenanceConfigLabel = cms.string('IDdefinitions')
+        ),
+        photonPtSumOutsideSignalConedR03 = cms.PSet(
+            idLabel = cms.string('PhotonPtSumOutsideSignalConedR03'),
+            inputTag = cms.InputTag("hpsPFTauBasicDiscriminatorsdR03LowPtElectronCleaned"),
+            provenanceConfigLabel = cms.string('IDdefinitions')
+        ),
+        puCorrPtSum = cms.PSet(
+            idLabel = cms.string('PUcorrPtSum'),
+            inputTag = cms.InputTag("hpsPFTauBasicDiscriminatorsLowPtElectronCleaned"),
+            provenanceConfigLabel = cms.string('IDdefinitions')
+        )
+    ),
+    tauJetCorrFactorsSource = cms.VInputTag(cms.InputTag("patTauJetCorrFactors")),
+    tauSource = cms.InputTag("hpsPFTauProducerLowPtElectronCleaned"),
+    tauTransverseImpactParameterSource = cms.InputTag("hpsPFTauTransverseImpactParametersLowPtElectronCleaned"),
+    userData = cms.PSet(
+        userCands = cms.PSet(
+            src = cms.VInputTag("")
+        ),
+        userClasses = cms.PSet(
+            src = cms.VInputTag("")
+        ),
+        userFloats = cms.PSet(
+            src = cms.VInputTag("")
+        ),
+        userFunctionLabels = cms.vstring(),
+        userFunctions = cms.vstring(),
+        userInts = cms.PSet(
+            src = cms.VInputTag("")
+        )
+    ),
+    userIsolation = cms.PSet(
+
+    )
+)
+
+
 process.patTausMuonCleaned = cms.EDProducer("PATTauProducer",
     addEfficiencies = cms.bool(False),
     addGenJetMatch = cms.bool(True),
@@ -9871,6 +12205,16 @@ process.pfNoPileUpIsoPFBRECOElectronCleaned = cms.EDProducer("TPPFCandidatesOnPF
 )
 
 
+process.pfNoPileUpIsoPFBRECOLowPtElectronCleaned = cms.EDProducer("TPPFCandidatesOnPFCandidates",
+    bottomCollection = cms.InputTag("particleFlowPtrs"),
+    enable = cms.bool(True),
+    matchByPtrDirect = cms.bool(True),
+    mightGet = cms.optional.untracked.vstring,
+    name = cms.untracked.string('pileUpOnPFCandidates'),
+    topCollection = cms.InputTag("pfPileUpIsoPFBRECOLowPtElectronCleaned")
+)
+
+
 process.pfNoPileUpIsoPFBRECOMuonCleaned = cms.EDProducer("TPPFCandidatesOnPFCandidates",
     bottomCollection = cms.InputTag("particleFlowPtrs"),
     enable = cms.bool(True),
@@ -9906,6 +12250,18 @@ process.pfPileUpIsoPFBRECOBoosted = cms.EDProducer("PFPileUp",
 
 
 process.pfPileUpIsoPFBRECOElectronCleaned = cms.EDProducer("PFPileUp",
+    Enable = cms.bool(True),
+    PFCandidates = cms.InputTag("particleFlowPtrs"),
+    Vertices = cms.InputTag("offlinePrimaryVertices"),
+    checkClosestZVertex = cms.bool(True),
+    useVertexAssociation = cms.bool(False),
+    verbose = cms.untracked.bool(False),
+    vertexAssociation = cms.InputTag(""),
+    vertexAssociationQuality = cms.int32(0)
+)
+
+
+process.pfPileUpIsoPFBRECOLowPtElectronCleaned = cms.EDProducer("PFPileUp",
     Enable = cms.bool(True),
     PFCandidates = cms.InputTag("particleFlowPtrs"),
     Vertices = cms.InputTag("offlinePrimaryVertices"),
@@ -10402,6 +12758,33 @@ process.pfRecoTauTagInfoProducerElectronCleaned = cms.EDProducer("PFRecoTauTagIn
 )
 
 
+process.pfRecoTauTagInfoProducerLowPtElectronCleaned = cms.EDProducer("PFRecoTauTagInfoProducer",
+    ChargedHadrCand_AssociationCone = cms.double(0.8),
+    ChargedHadrCand_tkPVmaxDZ = cms.double(0.2),
+    ChargedHadrCand_tkmaxChi2 = cms.double(100),
+    ChargedHadrCand_tkmaxipt = cms.double(0.03),
+    ChargedHadrCand_tkminPixelHitsn = cms.int32(0),
+    ChargedHadrCand_tkminPt = cms.double(0.5),
+    ChargedHadrCand_tkminTrackerHitsn = cms.int32(3),
+    GammaCand_EcalclusMinEt = cms.double(1),
+    NeutrHadrCand_HcalclusMinEt = cms.double(1),
+    PFCandidateProducer = cms.InputTag("particleFlow"),
+    PFJetTracksAssociatorProducer = cms.InputTag("ak4PFJetTracksAssociatorAtVertex"),
+    PVProducer = cms.InputTag("offlinePrimaryVertices"),
+    UsePVconstraint = cms.bool(True),
+    mightGet = cms.optional.untracked.vstring,
+    smearedPVsigmaX = cms.double(0.0015),
+    smearedPVsigmaY = cms.double(0.0015),
+    smearedPVsigmaZ = cms.double(0.005),
+    tkPVmaxDZ = cms.double(0.2),
+    tkmaxChi2 = cms.double(100),
+    tkmaxipt = cms.double(0.03),
+    tkminPixelHitsn = cms.int32(0),
+    tkminPt = cms.double(0.5),
+    tkminTrackerHitsn = cms.int32(3)
+)
+
+
 process.pfRecoTauTagInfoProducerMuonCleaned = cms.EDProducer("PFRecoTauTagInfoProducer",
     ChargedHadrCand_AssociationCone = cms.double(0.8),
     ChargedHadrCand_tkPVmaxDZ = cms.double(0.2),
@@ -10601,7 +12984,7 @@ process.pileupJetIdUpdated = cms.EDProducer("PileupJetIdProducer",
 
 
 process.prefiringweight = cms.EDProducer("L1PrefiringWeightProducer",
-    DataEraECAL = cms.string('None'),
+    DataEraECAL = cms.string('UL2017BtoF'),
     DataEraMuon = cms.string('20172018'),
     JetMaxMuonFraction = cms.double(0.5),
     L1Maps = cms.string('L1PrefiringMaps.root'),
@@ -10646,6 +13029,16 @@ process.recoTauAK4Jets08RegionPATElectronCleaned = cms.EDProducer("RecoTauPatJet
 )
 
 
+process.recoTauAK4Jets08RegionPATLowPtElectronCleaned = cms.EDProducer("RecoTauPatJetRegionProducer",
+    deltaR = cms.double(0.8),
+    maxJetAbsEta = cms.double(2.5),
+    minJetPt = cms.double(14.0),
+    pfCandAssocMapSrc = cms.InputTag(""),
+    pfCandSrc = cms.InputTag("PackedCandsLowPtElectronCleaned","packedPFCandidatesLowPtElectronCleaned"),
+    src = cms.InputTag("patJetsPATLowPtElectronCleaned")
+)
+
+
 process.recoTauAK4Jets08RegionPATMuonCleaned = cms.EDProducer("RecoTauPatJetRegionProducer",
     deltaR = cms.double(0.8),
     maxJetAbsEta = cms.double(2.5),
@@ -10682,6 +13075,17 @@ process.recoTauAK4PFJets08RegionElectronCleaned = cms.EDProducer("RecoTauJetRegi
     deltaR = cms.double(0.8),
     maxJetAbsEta = cms.double(2.5),
     minJetPt = cms.double(5),
+    pfCandAssocMapSrc = cms.InputTag(""),
+    pfCandSrc = cms.InputTag("particleFlow"),
+    src = cms.InputTag("ak4PFJets"),
+    verbosity = cms.int32(0)
+)
+
+
+process.recoTauAK4PFJets08RegionLowPtElectronCleaned = cms.EDProducer("RecoTauJetRegionProducer",
+    deltaR = cms.double(0.8),
+    maxJetAbsEta = cms.double(2.5),
+    minJetPt = cms.double(14.0),
     pfCandAssocMapSrc = cms.InputTag(""),
     pfCandSrc = cms.InputTag("particleFlow"),
     src = cms.InputTag("ak4PFJets"),
@@ -10809,6 +13213,33 @@ process.rerunDiscriminationByIsolationOldDMMVArun2017v2ElectronCleaned = cms.EDP
 )
 
 
+process.rerunDiscriminationByIsolationOldDMMVArun2017v2LowPtElectronCleaned = cms.EDProducer("PATTauDiscriminantCutMultiplexer",
+    PATTauProducer = cms.InputTag("selectedPatTausNoNewIDsLowPtElectronCleaned"),
+    Prediscriminants = cms.PSet(
+        BooleanOperator = cms.string('and')
+    ),
+    inputFileName = cms.FileInPath('RecoTauTag/RecoTau/data/emptyMVAinputFile'),
+    loadMVAfromDB = cms.bool(True),
+    mapping = cms.VPSet(cms.PSet(
+        category = cms.uint32(0),
+        cut = cms.string('RecoTauTag_tauIdMVAIsoDBoldDMwLT2017v2'),
+        variable = cms.string('pt')
+    )),
+    mvaOutput_normalization = cms.string('RecoTauTag_tauIdMVAIsoDBoldDMwLT2017v2_mvaOutput_normalization'),
+    toMultiplex = cms.InputTag("rerunDiscriminationByIsolationOldDMMVArun2017v2rawLowPtElectronCleaned"),
+    verbosity = cms.int32(0),
+    workingPoints = cms.vstring(
+        '_WPEff95',
+        '_WPEff90',
+        '_WPEff80',
+        '_WPEff70',
+        '_WPEff60',
+        '_WPEff50',
+        '_WPEff40'
+    )
+)
+
+
 process.rerunDiscriminationByIsolationOldDMMVArun2017v2MuonCleaned = cms.EDProducer("PATTauDiscriminantCutMultiplexer",
     PATTauProducer = cms.InputTag("selectedPatTausNoNewIDsMuonCleaned"),
     Prediscriminants = cms.PSet(
@@ -10876,6 +13307,25 @@ process.rerunDiscriminationByIsolationOldDMMVArun2017v2rawBoosted = cms.EDProduc
 
 process.rerunDiscriminationByIsolationOldDMMVArun2017v2rawElectronCleaned = cms.EDProducer("PATTauDiscriminationByMVAIsolationRun2",
     PATTauProducer = cms.InputTag("selectedPatTausNoNewIDsElectronCleaned"),
+    Prediscriminants = cms.PSet(
+        BooleanOperator = cms.string('and')
+    ),
+    inputFileName = cms.FileInPath('RecoTauTag/RecoTau/data/emptyMVAinputFile'),
+    loadMVAfromDB = cms.bool(True),
+    mightGet = cms.optional.untracked.vstring,
+    mvaName = cms.string('RecoTauTag_tauIdMVAIsoDBoldDMwLT2017v2'),
+    mvaOpt = cms.string('DBoldDMwLTwGJ'),
+    srcChargedIsoPtSum = cms.string('chargedIsoPtSum'),
+    srcFootprintCorrection = cms.string('footprintCorrection'),
+    srcNeutralIsoPtSum = cms.string('neutralIsoPtSum'),
+    srcPUcorrPtSum = cms.string('puCorrPtSum'),
+    srcPhotonPtSumOutsideSignalCone = cms.string('photonPtSumOutsideSignalCone'),
+    verbosity = cms.int32(0)
+)
+
+
+process.rerunDiscriminationByIsolationOldDMMVArun2017v2rawLowPtElectronCleaned = cms.EDProducer("PATTauDiscriminationByMVAIsolationRun2",
+    PATTauProducer = cms.InputTag("selectedPatTausNoNewIDsLowPtElectronCleaned"),
     Prediscriminants = cms.PSet(
         BooleanOperator = cms.string('and')
     ),
@@ -11386,6 +13836,165 @@ process.selectedPatTausElectronCleaned = cms.EDProducer("PATTauIDEmbedder",
         ),
         byVVVLooseDeepTau2017v2p1VSjet = cms.PSet(
             inputTag = cms.InputTag("deepTau2017v2p1ElectronCleaned","VSjet"),
+            workingPointIndex = cms.int32(0)
+        )
+    )
+)
+
+
+process.selectedPatTausLowPtElectronCleaned = cms.EDProducer("PATTauIDEmbedder",
+    src = cms.InputTag("selectedPatTausNoNewIDsLowPtElectronCleaned"),
+    tauIDSources = cms.PSet(
+        againstElectronLooseMVA62018 = cms.PSet(
+            inputTag = cms.InputTag("patTauDiscriminationByElectronRejectionMVA62018LowPtElectronCleaned"),
+            workingPointIndex = cms.int32(1)
+        ),
+        againstElectronMVA6Raw2018 = cms.PSet(
+            inputTag = cms.InputTag("patTauDiscriminationByElectronRejectionMVA62018LowPtElectronCleaned"),
+            workingPointIndex = cms.int32(-1)
+        ),
+        againstElectronMVA6category2018 = cms.PSet(
+            inputTag = cms.InputTag("patTauDiscriminationByElectronRejectionMVA62018LowPtElectronCleaned"),
+            workingPointIndex = cms.int32(-2)
+        ),
+        againstElectronMediumMVA62018 = cms.PSet(
+            inputTag = cms.InputTag("patTauDiscriminationByElectronRejectionMVA62018LowPtElectronCleaned"),
+            workingPointIndex = cms.int32(2)
+        ),
+        againstElectronTightMVA62018 = cms.PSet(
+            inputTag = cms.InputTag("patTauDiscriminationByElectronRejectionMVA62018LowPtElectronCleaned"),
+            workingPointIndex = cms.int32(3)
+        ),
+        againstElectronVLooseMVA62018 = cms.PSet(
+            inputTag = cms.InputTag("patTauDiscriminationByElectronRejectionMVA62018LowPtElectronCleaned"),
+            workingPointIndex = cms.int32(0)
+        ),
+        againstElectronVTightMVA62018 = cms.PSet(
+            inputTag = cms.InputTag("patTauDiscriminationByElectronRejectionMVA62018LowPtElectronCleaned"),
+            workingPointIndex = cms.int32(4)
+        ),
+        byDeepTau2017v2p1VSeraw = cms.PSet(
+            inputTag = cms.InputTag("deepTau2017v2p1LowPtElectronCleaned","VSe"),
+            workingPointIndex = cms.int32(-1)
+        ),
+        byDeepTau2017v2p1VSjetraw = cms.PSet(
+            inputTag = cms.InputTag("deepTau2017v2p1LowPtElectronCleaned","VSjet"),
+            workingPointIndex = cms.int32(-1)
+        ),
+        byDeepTau2017v2p1VSmuraw = cms.PSet(
+            inputTag = cms.InputTag("deepTau2017v2p1LowPtElectronCleaned","VSmu"),
+            workingPointIndex = cms.int32(-1)
+        ),
+        byIsolationMVArun2017v2DBoldDMwLTraw2017 = cms.PSet(
+            inputTag = cms.InputTag("rerunDiscriminationByIsolationOldDMMVArun2017v2LowPtElectronCleaned"),
+            workingPointIndex = cms.int32(-1)
+        ),
+        byLooseDeepTau2017v2p1VSe = cms.PSet(
+            inputTag = cms.InputTag("deepTau2017v2p1LowPtElectronCleaned","VSe"),
+            workingPointIndex = cms.int32(3)
+        ),
+        byLooseDeepTau2017v2p1VSjet = cms.PSet(
+            inputTag = cms.InputTag("deepTau2017v2p1LowPtElectronCleaned","VSjet"),
+            workingPointIndex = cms.int32(3)
+        ),
+        byLooseDeepTau2017v2p1VSmu = cms.PSet(
+            inputTag = cms.InputTag("deepTau2017v2p1LowPtElectronCleaned","VSmu"),
+            workingPointIndex = cms.int32(1)
+        ),
+        byLooseIsolationMVArun2017v2DBoldDMwLT2017 = cms.PSet(
+            inputTag = cms.InputTag("rerunDiscriminationByIsolationOldDMMVArun2017v2LowPtElectronCleaned"),
+            workingPointIndex = cms.int32(2)
+        ),
+        byMediumDeepTau2017v2p1VSe = cms.PSet(
+            inputTag = cms.InputTag("deepTau2017v2p1LowPtElectronCleaned","VSe"),
+            workingPointIndex = cms.int32(4)
+        ),
+        byMediumDeepTau2017v2p1VSjet = cms.PSet(
+            inputTag = cms.InputTag("deepTau2017v2p1LowPtElectronCleaned","VSjet"),
+            workingPointIndex = cms.int32(4)
+        ),
+        byMediumDeepTau2017v2p1VSmu = cms.PSet(
+            inputTag = cms.InputTag("deepTau2017v2p1LowPtElectronCleaned","VSmu"),
+            workingPointIndex = cms.int32(2)
+        ),
+        byMediumIsolationMVArun2017v2DBoldDMwLT2017 = cms.PSet(
+            inputTag = cms.InputTag("rerunDiscriminationByIsolationOldDMMVArun2017v2LowPtElectronCleaned"),
+            workingPointIndex = cms.int32(3)
+        ),
+        byTightDeepTau2017v2p1VSe = cms.PSet(
+            inputTag = cms.InputTag("deepTau2017v2p1LowPtElectronCleaned","VSe"),
+            workingPointIndex = cms.int32(5)
+        ),
+        byTightDeepTau2017v2p1VSjet = cms.PSet(
+            inputTag = cms.InputTag("deepTau2017v2p1LowPtElectronCleaned","VSjet"),
+            workingPointIndex = cms.int32(5)
+        ),
+        byTightDeepTau2017v2p1VSmu = cms.PSet(
+            inputTag = cms.InputTag("deepTau2017v2p1LowPtElectronCleaned","VSmu"),
+            workingPointIndex = cms.int32(3)
+        ),
+        byTightIsolationMVArun2017v2DBoldDMwLT2017 = cms.PSet(
+            inputTag = cms.InputTag("rerunDiscriminationByIsolationOldDMMVArun2017v2LowPtElectronCleaned"),
+            workingPointIndex = cms.int32(4)
+        ),
+        byVLooseDeepTau2017v2p1VSe = cms.PSet(
+            inputTag = cms.InputTag("deepTau2017v2p1LowPtElectronCleaned","VSe"),
+            workingPointIndex = cms.int32(2)
+        ),
+        byVLooseDeepTau2017v2p1VSjet = cms.PSet(
+            inputTag = cms.InputTag("deepTau2017v2p1LowPtElectronCleaned","VSjet"),
+            workingPointIndex = cms.int32(2)
+        ),
+        byVLooseDeepTau2017v2p1VSmu = cms.PSet(
+            inputTag = cms.InputTag("deepTau2017v2p1LowPtElectronCleaned","VSmu"),
+            workingPointIndex = cms.int32(0)
+        ),
+        byVLooseIsolationMVArun2017v2DBoldDMwLT2017 = cms.PSet(
+            inputTag = cms.InputTag("rerunDiscriminationByIsolationOldDMMVArun2017v2LowPtElectronCleaned"),
+            workingPointIndex = cms.int32(1)
+        ),
+        byVTightDeepTau2017v2p1VSe = cms.PSet(
+            inputTag = cms.InputTag("deepTau2017v2p1LowPtElectronCleaned","VSe"),
+            workingPointIndex = cms.int32(6)
+        ),
+        byVTightDeepTau2017v2p1VSjet = cms.PSet(
+            inputTag = cms.InputTag("deepTau2017v2p1LowPtElectronCleaned","VSjet"),
+            workingPointIndex = cms.int32(6)
+        ),
+        byVTightIsolationMVArun2017v2DBoldDMwLT2017 = cms.PSet(
+            inputTag = cms.InputTag("rerunDiscriminationByIsolationOldDMMVArun2017v2LowPtElectronCleaned"),
+            workingPointIndex = cms.int32(5)
+        ),
+        byVVLooseDeepTau2017v2p1VSe = cms.PSet(
+            inputTag = cms.InputTag("deepTau2017v2p1LowPtElectronCleaned","VSe"),
+            workingPointIndex = cms.int32(1)
+        ),
+        byVVLooseDeepTau2017v2p1VSjet = cms.PSet(
+            inputTag = cms.InputTag("deepTau2017v2p1LowPtElectronCleaned","VSjet"),
+            workingPointIndex = cms.int32(1)
+        ),
+        byVVLooseIsolationMVArun2017v2DBoldDMwLT2017 = cms.PSet(
+            inputTag = cms.InputTag("rerunDiscriminationByIsolationOldDMMVArun2017v2LowPtElectronCleaned"),
+            workingPointIndex = cms.int32(0)
+        ),
+        byVVTightDeepTau2017v2p1VSe = cms.PSet(
+            inputTag = cms.InputTag("deepTau2017v2p1LowPtElectronCleaned","VSe"),
+            workingPointIndex = cms.int32(7)
+        ),
+        byVVTightDeepTau2017v2p1VSjet = cms.PSet(
+            inputTag = cms.InputTag("deepTau2017v2p1LowPtElectronCleaned","VSjet"),
+            workingPointIndex = cms.int32(7)
+        ),
+        byVVTightIsolationMVArun2017v2DBoldDMwLT2017 = cms.PSet(
+            inputTag = cms.InputTag("rerunDiscriminationByIsolationOldDMMVArun2017v2LowPtElectronCleaned"),
+            workingPointIndex = cms.int32(6)
+        ),
+        byVVVLooseDeepTau2017v2p1VSe = cms.PSet(
+            inputTag = cms.InputTag("deepTau2017v2p1LowPtElectronCleaned","VSe"),
+            workingPointIndex = cms.int32(0)
+        ),
+        byVVVLooseDeepTau2017v2p1VSjet = cms.PSet(
+            inputTag = cms.InputTag("deepTau2017v2p1LowPtElectronCleaned","VSjet"),
             workingPointIndex = cms.int32(0)
         )
     )
@@ -12029,6 +14638,165 @@ process.selectedPatTausNewIDsElectronCleaned = cms.EDProducer("PATTauIDEmbedder"
 )
 
 
+process.selectedPatTausNewIDsLowPtElectronCleaned = cms.EDProducer("PATTauIDEmbedder",
+    src = cms.InputTag("slimmedTaus"),
+    tauIDSources = cms.PSet(
+        againstElectronLooseMVA62018 = cms.PSet(
+            inputTag = cms.InputTag("patTauDiscriminationByElectronRejectionMVA62018LowPtElectronCleaned"),
+            workingPointIndex = cms.int32(1)
+        ),
+        againstElectronMVA6Raw2018 = cms.PSet(
+            inputTag = cms.InputTag("patTauDiscriminationByElectronRejectionMVA62018LowPtElectronCleaned"),
+            workingPointIndex = cms.int32(-1)
+        ),
+        againstElectronMVA6category2018 = cms.PSet(
+            inputTag = cms.InputTag("patTauDiscriminationByElectronRejectionMVA62018LowPtElectronCleaned"),
+            workingPointIndex = cms.int32(-2)
+        ),
+        againstElectronMediumMVA62018 = cms.PSet(
+            inputTag = cms.InputTag("patTauDiscriminationByElectronRejectionMVA62018LowPtElectronCleaned"),
+            workingPointIndex = cms.int32(2)
+        ),
+        againstElectronTightMVA62018 = cms.PSet(
+            inputTag = cms.InputTag("patTauDiscriminationByElectronRejectionMVA62018LowPtElectronCleaned"),
+            workingPointIndex = cms.int32(3)
+        ),
+        againstElectronVLooseMVA62018 = cms.PSet(
+            inputTag = cms.InputTag("patTauDiscriminationByElectronRejectionMVA62018LowPtElectronCleaned"),
+            workingPointIndex = cms.int32(0)
+        ),
+        againstElectronVTightMVA62018 = cms.PSet(
+            inputTag = cms.InputTag("patTauDiscriminationByElectronRejectionMVA62018LowPtElectronCleaned"),
+            workingPointIndex = cms.int32(4)
+        ),
+        byDeepTau2017v2p1VSeraw = cms.PSet(
+            inputTag = cms.InputTag("deepTau2017v2p1LowPtElectronCleaned","VSe"),
+            workingPointIndex = cms.int32(-1)
+        ),
+        byDeepTau2017v2p1VSjetraw = cms.PSet(
+            inputTag = cms.InputTag("deepTau2017v2p1LowPtElectronCleaned","VSjet"),
+            workingPointIndex = cms.int32(-1)
+        ),
+        byDeepTau2017v2p1VSmuraw = cms.PSet(
+            inputTag = cms.InputTag("deepTau2017v2p1LowPtElectronCleaned","VSmu"),
+            workingPointIndex = cms.int32(-1)
+        ),
+        byIsolationMVArun2017v2DBoldDMwLTraw2017 = cms.PSet(
+            inputTag = cms.InputTag("rerunDiscriminationByIsolationOldDMMVArun2017v2LowPtElectronCleaned"),
+            workingPointIndex = cms.int32(-1)
+        ),
+        byLooseDeepTau2017v2p1VSe = cms.PSet(
+            inputTag = cms.InputTag("deepTau2017v2p1LowPtElectronCleaned","VSe"),
+            workingPointIndex = cms.int32(3)
+        ),
+        byLooseDeepTau2017v2p1VSjet = cms.PSet(
+            inputTag = cms.InputTag("deepTau2017v2p1LowPtElectronCleaned","VSjet"),
+            workingPointIndex = cms.int32(3)
+        ),
+        byLooseDeepTau2017v2p1VSmu = cms.PSet(
+            inputTag = cms.InputTag("deepTau2017v2p1LowPtElectronCleaned","VSmu"),
+            workingPointIndex = cms.int32(1)
+        ),
+        byLooseIsolationMVArun2017v2DBoldDMwLT2017 = cms.PSet(
+            inputTag = cms.InputTag("rerunDiscriminationByIsolationOldDMMVArun2017v2LowPtElectronCleaned"),
+            workingPointIndex = cms.int32(2)
+        ),
+        byMediumDeepTau2017v2p1VSe = cms.PSet(
+            inputTag = cms.InputTag("deepTau2017v2p1LowPtElectronCleaned","VSe"),
+            workingPointIndex = cms.int32(4)
+        ),
+        byMediumDeepTau2017v2p1VSjet = cms.PSet(
+            inputTag = cms.InputTag("deepTau2017v2p1LowPtElectronCleaned","VSjet"),
+            workingPointIndex = cms.int32(4)
+        ),
+        byMediumDeepTau2017v2p1VSmu = cms.PSet(
+            inputTag = cms.InputTag("deepTau2017v2p1LowPtElectronCleaned","VSmu"),
+            workingPointIndex = cms.int32(2)
+        ),
+        byMediumIsolationMVArun2017v2DBoldDMwLT2017 = cms.PSet(
+            inputTag = cms.InputTag("rerunDiscriminationByIsolationOldDMMVArun2017v2LowPtElectronCleaned"),
+            workingPointIndex = cms.int32(3)
+        ),
+        byTightDeepTau2017v2p1VSe = cms.PSet(
+            inputTag = cms.InputTag("deepTau2017v2p1LowPtElectronCleaned","VSe"),
+            workingPointIndex = cms.int32(5)
+        ),
+        byTightDeepTau2017v2p1VSjet = cms.PSet(
+            inputTag = cms.InputTag("deepTau2017v2p1LowPtElectronCleaned","VSjet"),
+            workingPointIndex = cms.int32(5)
+        ),
+        byTightDeepTau2017v2p1VSmu = cms.PSet(
+            inputTag = cms.InputTag("deepTau2017v2p1LowPtElectronCleaned","VSmu"),
+            workingPointIndex = cms.int32(3)
+        ),
+        byTightIsolationMVArun2017v2DBoldDMwLT2017 = cms.PSet(
+            inputTag = cms.InputTag("rerunDiscriminationByIsolationOldDMMVArun2017v2LowPtElectronCleaned"),
+            workingPointIndex = cms.int32(4)
+        ),
+        byVLooseDeepTau2017v2p1VSe = cms.PSet(
+            inputTag = cms.InputTag("deepTau2017v2p1LowPtElectronCleaned","VSe"),
+            workingPointIndex = cms.int32(2)
+        ),
+        byVLooseDeepTau2017v2p1VSjet = cms.PSet(
+            inputTag = cms.InputTag("deepTau2017v2p1LowPtElectronCleaned","VSjet"),
+            workingPointIndex = cms.int32(2)
+        ),
+        byVLooseDeepTau2017v2p1VSmu = cms.PSet(
+            inputTag = cms.InputTag("deepTau2017v2p1LowPtElectronCleaned","VSmu"),
+            workingPointIndex = cms.int32(0)
+        ),
+        byVLooseIsolationMVArun2017v2DBoldDMwLT2017 = cms.PSet(
+            inputTag = cms.InputTag("rerunDiscriminationByIsolationOldDMMVArun2017v2LowPtElectronCleaned"),
+            workingPointIndex = cms.int32(1)
+        ),
+        byVTightDeepTau2017v2p1VSe = cms.PSet(
+            inputTag = cms.InputTag("deepTau2017v2p1LowPtElectronCleaned","VSe"),
+            workingPointIndex = cms.int32(6)
+        ),
+        byVTightDeepTau2017v2p1VSjet = cms.PSet(
+            inputTag = cms.InputTag("deepTau2017v2p1LowPtElectronCleaned","VSjet"),
+            workingPointIndex = cms.int32(6)
+        ),
+        byVTightIsolationMVArun2017v2DBoldDMwLT2017 = cms.PSet(
+            inputTag = cms.InputTag("rerunDiscriminationByIsolationOldDMMVArun2017v2LowPtElectronCleaned"),
+            workingPointIndex = cms.int32(5)
+        ),
+        byVVLooseDeepTau2017v2p1VSe = cms.PSet(
+            inputTag = cms.InputTag("deepTau2017v2p1LowPtElectronCleaned","VSe"),
+            workingPointIndex = cms.int32(1)
+        ),
+        byVVLooseDeepTau2017v2p1VSjet = cms.PSet(
+            inputTag = cms.InputTag("deepTau2017v2p1LowPtElectronCleaned","VSjet"),
+            workingPointIndex = cms.int32(1)
+        ),
+        byVVLooseIsolationMVArun2017v2DBoldDMwLT2017 = cms.PSet(
+            inputTag = cms.InputTag("rerunDiscriminationByIsolationOldDMMVArun2017v2LowPtElectronCleaned"),
+            workingPointIndex = cms.int32(0)
+        ),
+        byVVTightDeepTau2017v2p1VSe = cms.PSet(
+            inputTag = cms.InputTag("deepTau2017v2p1LowPtElectronCleaned","VSe"),
+            workingPointIndex = cms.int32(7)
+        ),
+        byVVTightDeepTau2017v2p1VSjet = cms.PSet(
+            inputTag = cms.InputTag("deepTau2017v2p1LowPtElectronCleaned","VSjet"),
+            workingPointIndex = cms.int32(7)
+        ),
+        byVVTightIsolationMVArun2017v2DBoldDMwLT2017 = cms.PSet(
+            inputTag = cms.InputTag("rerunDiscriminationByIsolationOldDMMVArun2017v2LowPtElectronCleaned"),
+            workingPointIndex = cms.int32(6)
+        ),
+        byVVVLooseDeepTau2017v2p1VSe = cms.PSet(
+            inputTag = cms.InputTag("deepTau2017v2p1LowPtElectronCleaned","VSe"),
+            workingPointIndex = cms.int32(0)
+        ),
+        byVVVLooseDeepTau2017v2p1VSjet = cms.PSet(
+            inputTag = cms.InputTag("deepTau2017v2p1LowPtElectronCleaned","VSjet"),
+            workingPointIndex = cms.int32(0)
+        )
+    )
+)
+
+
 process.selectedPatTausNewIDsMuonCleaned = cms.EDProducer("PATTauIDEmbedder",
     src = cms.InputTag("slimmedTaus"),
     tauIDSources = cms.PSet(
@@ -12216,6 +14984,20 @@ process.slimmedTausElectronCleaned = cms.EDProducer("PATTauSlimmer",
 )
 
 
+process.slimmedTausLowPtElectronCleaned = cms.EDProducer("PATTauSlimmer",
+    dropPFSpecific = cms.bool(True),
+    dropPiZeroRefs = cms.bool(True),
+    dropTauChargedHadronRefs = cms.bool(True),
+    linkToPackedPFCandidates = cms.bool(True),
+    modifierConfig = cms.PSet(
+        modifications = cms.VPSet()
+    ),
+    modifyTaus = cms.bool(True),
+    packedPFCandidates = cms.InputTag("PackedCandsLowPtElectronCleaned","packedPFCandidatesLowPtElectronCleaned"),
+    src = cms.InputTag("selectedPatTausLowPtElectronCleaned")
+)
+
+
 process.slimmedTausMuonCleaned = cms.EDProducer("PATTauSlimmer",
     dropPFSpecific = cms.bool(True),
     dropPiZeroRefs = cms.bool(True),
@@ -12283,6 +15065,19 @@ process.tauGenJetMatchElectronCleaned = cms.EDProducer("GenJetMatcher",
 )
 
 
+process.tauGenJetMatchLowPtElectronCleaned = cms.EDProducer("GenJetMatcher",
+    checkCharge = cms.bool(False),
+    matched = cms.InputTag("tauGenJetsSelectorAllHadronsLowPtElectronCleaned"),
+    maxDPtRel = cms.double(3.0),
+    maxDeltaR = cms.double(0.1),
+    mcPdgId = cms.vint32(),
+    mcStatus = cms.vint32(),
+    resolveAmbiguities = cms.bool(True),
+    resolveByMatchQuality = cms.bool(False),
+    src = cms.InputTag("hpsPFTauProducerLowPtElectronCleaned")
+)
+
+
 process.tauGenJetMatchMuonCleaned = cms.EDProducer("GenJetMatcher",
     checkCharge = cms.bool(False),
     matched = cms.InputTag("tauGenJetsSelectorAllHadronsMuonCleaned"),
@@ -12311,6 +15106,13 @@ process.tauGenJetsBoosted = cms.EDProducer("TauGenJetProducer",
 
 
 process.tauGenJetsElectronCleaned = cms.EDProducer("TauGenJetProducer",
+    GenParticles = cms.InputTag("prunedGenParticles"),
+    includeNeutrinos = cms.bool(False),
+    verbose = cms.untracked.bool(False)
+)
+
+
+process.tauGenJetsLowPtElectronCleaned = cms.EDProducer("TauGenJetProducer",
     GenParticles = cms.InputTag("prunedGenParticles"),
     includeNeutrinos = cms.bool(False),
     verbose = cms.untracked.bool(False)
@@ -12377,6 +15179,25 @@ process.tauIsoDepositPFCandidatesElectronCleaned = cms.EDProducer("CandIsoDeposi
     ),
     MultipleDepositsFlag = cms.bool(False),
     src = cms.InputTag("hpsPFTauProducerElectronCleaned"),
+    trackType = cms.string('candidate')
+)
+
+
+process.tauIsoDepositPFCandidatesLowPtElectronCleaned = cms.EDProducer("CandIsoDepositProducer",
+    ExtractorPSet = cms.PSet(
+        ComponentName = cms.string('PFTauExtractor'),
+        DR_Max = cms.double(1.0),
+        DR_Veto = cms.double(0.0),
+        DepositLabel = cms.untracked.string(''),
+        Diff_r = cms.double(10000.0),
+        Diff_z = cms.double(10000.0),
+        candidateSource = cms.InputTag("particleFlow"),
+        dRmatchPFTau = cms.double(0.1),
+        dRvetoPFTauSignalConeConstituents = cms.double(0.01),
+        tauSource = cms.InputTag("hpsPFTauProducerLowPtElectronCleaned")
+    ),
+    MultipleDepositsFlag = cms.bool(False),
+    src = cms.InputTag("hpsPFTauProducerLowPtElectronCleaned"),
     trackType = cms.string('candidate')
 )
 
@@ -12457,6 +15278,25 @@ process.tauIsoDepositPFChargedHadronsElectronCleaned = cms.EDProducer("CandIsoDe
 )
 
 
+process.tauIsoDepositPFChargedHadronsLowPtElectronCleaned = cms.EDProducer("CandIsoDepositProducer",
+    ExtractorPSet = cms.PSet(
+        ComponentName = cms.string('PFTauExtractor'),
+        DR_Max = cms.double(1.0),
+        DR_Veto = cms.double(0.0),
+        DepositLabel = cms.untracked.string(''),
+        Diff_r = cms.double(0.1),
+        Diff_z = cms.double(0.2),
+        candidateSource = cms.InputTag("pfAllChargedHadronsPFBRECOLowPtElectronCleaned"),
+        dRmatchPFTau = cms.double(0.1),
+        dRvetoPFTauSignalConeConstituents = cms.double(0.01),
+        tauSource = cms.InputTag("hpsPFTauProducerLowPtElectronCleaned")
+    ),
+    MultipleDepositsFlag = cms.bool(False),
+    src = cms.InputTag("hpsPFTauProducerLowPtElectronCleaned"),
+    trackType = cms.string('candidate')
+)
+
+
 process.tauIsoDepositPFChargedHadronsMuonCleaned = cms.EDProducer("CandIsoDepositProducer",
     ExtractorPSet = cms.PSet(
         ComponentName = cms.string('PFTauExtractor'),
@@ -12529,6 +15369,25 @@ process.tauIsoDepositPFGammasElectronCleaned = cms.EDProducer("CandIsoDepositPro
     ),
     MultipleDepositsFlag = cms.bool(False),
     src = cms.InputTag("hpsPFTauProducerElectronCleaned"),
+    trackType = cms.string('candidate')
+)
+
+
+process.tauIsoDepositPFGammasLowPtElectronCleaned = cms.EDProducer("CandIsoDepositProducer",
+    ExtractorPSet = cms.PSet(
+        ComponentName = cms.string('PFTauExtractor'),
+        DR_Max = cms.double(1.0),
+        DR_Veto = cms.double(0.0),
+        DepositLabel = cms.untracked.string(''),
+        Diff_r = cms.double(10000.0),
+        Diff_z = cms.double(10000.0),
+        candidateSource = cms.InputTag("pfAllPhotonsPFBRECOLowPtElectronCleaned"),
+        dRmatchPFTau = cms.double(0.1),
+        dRvetoPFTauSignalConeConstituents = cms.double(0.01),
+        tauSource = cms.InputTag("hpsPFTauProducerLowPtElectronCleaned")
+    ),
+    MultipleDepositsFlag = cms.bool(False),
+    src = cms.InputTag("hpsPFTauProducerLowPtElectronCleaned"),
     trackType = cms.string('candidate')
 )
 
@@ -12609,6 +15468,25 @@ process.tauIsoDepositPFNeutralHadronsElectronCleaned = cms.EDProducer("CandIsoDe
 )
 
 
+process.tauIsoDepositPFNeutralHadronsLowPtElectronCleaned = cms.EDProducer("CandIsoDepositProducer",
+    ExtractorPSet = cms.PSet(
+        ComponentName = cms.string('PFTauExtractor'),
+        DR_Max = cms.double(1.0),
+        DR_Veto = cms.double(0.0),
+        DepositLabel = cms.untracked.string(''),
+        Diff_r = cms.double(10000.0),
+        Diff_z = cms.double(10000.0),
+        candidateSource = cms.InputTag("pfAllNeutralHadronsPFBRECOLowPtElectronCleaned"),
+        dRmatchPFTau = cms.double(0.1),
+        dRvetoPFTauSignalConeConstituents = cms.double(0.01),
+        tauSource = cms.InputTag("hpsPFTauProducerLowPtElectronCleaned")
+    ),
+    MultipleDepositsFlag = cms.bool(False),
+    src = cms.InputTag("hpsPFTauProducerLowPtElectronCleaned"),
+    trackType = cms.string('candidate')
+)
+
+
 process.tauIsoDepositPFNeutralHadronsMuonCleaned = cms.EDProducer("CandIsoDepositProducer",
     ExtractorPSet = cms.PSet(
         ComponentName = cms.string('PFTauExtractor'),
@@ -12664,6 +15542,19 @@ process.tauMatchElectronCleaned = cms.EDProducer("MCMatcher",
     resolveAmbiguities = cms.bool(True),
     resolveByMatchQuality = cms.bool(False),
     src = cms.InputTag("hpsPFTauProducerElectronCleaned")
+)
+
+
+process.tauMatchLowPtElectronCleaned = cms.EDProducer("MCMatcher",
+    checkCharge = cms.bool(True),
+    matched = cms.InputTag("prunedGenParticles"),
+    maxDPtRel = cms.double(999.9),
+    maxDeltaR = cms.double(999.9),
+    mcPdgId = cms.vint32(15),
+    mcStatus = cms.vint32(2),
+    resolveAmbiguities = cms.bool(True),
+    resolveByMatchQuality = cms.bool(False),
+    src = cms.InputTag("hpsPFTauProducerLowPtElectronCleaned")
 )
 
 
@@ -12780,7 +15671,10 @@ process.HLT = cms.EDFilter("HLTHighLevel",
         'HLT_DoubleMediumChargedIsoPFTau40_Trk1_TightID_eta2p1_Reg_v',
         'HLT_DoubleTightChargedIsoPFTau35_Trk1_TightID_eta2p1_Reg_v',
         'HLT_DoubleTightChargedIsoPFTau40_Trk1_eta2p1_Reg_v',
-        'HLT_MediumChargedIsoPFTau50_Trk30_eta2p1_1pr_MET90_v'
+        'HLT_MediumChargedIsoPFTau50_Trk30_eta2p1_1pr_MET90_v',
+        'HLT_Ele115_CaloIdVT_GsfTrkIdT_v*',
+        'HLT_Ele50_CaloIdVT_GsfTrkIdT_PFJet165_v*',
+        'HLT_Photon200_v*'
     ),
     TriggerResultsTag = cms.InputTag("TriggerResults","","HLT"),
     andOr = cms.bool(True),
@@ -12801,6 +15695,12 @@ process.LooseFilter = cms.EDFilter("ElectronFilter",
 process.LooseMuonFilter = cms.EDFilter("PATMuonRefSelector",
     cut = cms.string('pt > 3.0 && isPFMuon && (isGlobalMuon || isTrackerMuon)'),
     src = cms.InputTag("slimmedMuons")
+)
+
+
+process.LowPtFilter = cms.EDFilter("LowPtElectronFilter",
+    LowPtEIdScoreCut = cms.string('4'),
+    electrons = cms.InputTag("slimmedLowPtElectrons")
 )
 
 
@@ -12831,6 +15731,16 @@ process.pfAllChargedHadronsPFBRECOElectronCleaned = cms.EDFilter("PFCandidateFwd
         2212, -2212
     ),
     src = cms.InputTag("pfNoPileUpIsoPFBRECOElectronCleaned")
+)
+
+
+process.pfAllChargedHadronsPFBRECOLowPtElectronCleaned = cms.EDFilter("PFCandidateFwdPtrCollectionPdgIdFilter",
+    makeClones = cms.bool(True),
+    pdgId = cms.vint32(
+        211, -211, 321, -321, 999211,
+        2212, -2212
+    ),
+    src = cms.InputTag("pfNoPileUpIsoPFBRECOLowPtElectronCleaned")
 )
 
 
@@ -12877,6 +15787,17 @@ process.pfAllChargedParticlesPFBRECOElectronCleaned = cms.EDFilter("PFCandidateF
 )
 
 
+process.pfAllChargedParticlesPFBRECOLowPtElectronCleaned = cms.EDFilter("PFCandidateFwdPtrCollectionPdgIdFilter",
+    makeClones = cms.bool(True),
+    pdgId = cms.vint32(
+        211, -211, 321, -321, 999211,
+        2212, -2212, 11, -11, 13,
+        -13
+    ),
+    src = cms.InputTag("pfNoPileUpIsoPFBRECOLowPtElectronCleaned")
+)
+
+
 process.pfAllChargedParticlesPFBRECOMuonCleaned = cms.EDFilter("PFCandidateFwdPtrCollectionPdgIdFilter",
     makeClones = cms.bool(True),
     pdgId = cms.vint32(
@@ -12909,6 +15830,13 @@ process.pfAllNeutralHadronsAndPhotonsPFBRECOElectronCleaned = cms.EDFilter("PFCa
 )
 
 
+process.pfAllNeutralHadronsAndPhotonsPFBRECOLowPtElectronCleaned = cms.EDFilter("PFCandidateFwdPtrCollectionPdgIdFilter",
+    makeClones = cms.bool(True),
+    pdgId = cms.vint32(22, 111, 130, 310, 2112),
+    src = cms.InputTag("pfNoPileUpIsoPFBRECOLowPtElectronCleaned")
+)
+
+
 process.pfAllNeutralHadronsAndPhotonsPFBRECOMuonCleaned = cms.EDFilter("PFCandidateFwdPtrCollectionPdgIdFilter",
     makeClones = cms.bool(True),
     pdgId = cms.vint32(22, 111, 130, 310, 2112),
@@ -12937,6 +15865,13 @@ process.pfAllNeutralHadronsPFBRECOElectronCleaned = cms.EDFilter("PFCandidateFwd
 )
 
 
+process.pfAllNeutralHadronsPFBRECOLowPtElectronCleaned = cms.EDFilter("PFCandidateFwdPtrCollectionPdgIdFilter",
+    makeClones = cms.bool(True),
+    pdgId = cms.vint32(111, 130, 310, 2112),
+    src = cms.InputTag("pfNoPileUpIsoPFBRECOLowPtElectronCleaned")
+)
+
+
 process.pfAllNeutralHadronsPFBRECOMuonCleaned = cms.EDFilter("PFCandidateFwdPtrCollectionPdgIdFilter",
     makeClones = cms.bool(True),
     pdgId = cms.vint32(111, 130, 310, 2112),
@@ -12962,6 +15897,13 @@ process.pfAllPhotonsPFBRECOElectronCleaned = cms.EDFilter("PFCandidateFwdPtrColl
     makeClones = cms.bool(True),
     pdgId = cms.vint32(22),
     src = cms.InputTag("pfNoPileUpIsoPFBRECOElectronCleaned")
+)
+
+
+process.pfAllPhotonsPFBRECOLowPtElectronCleaned = cms.EDFilter("PFCandidateFwdPtrCollectionPdgIdFilter",
+    makeClones = cms.bool(True),
+    pdgId = cms.vint32(22),
+    src = cms.InputTag("pfNoPileUpIsoPFBRECOLowPtElectronCleaned")
 )
 
 
@@ -13005,6 +15947,17 @@ process.pfPileUpAllChargedParticlesPFBRECOElectronCleaned = cms.EDFilter("PFCand
 )
 
 
+process.pfPileUpAllChargedParticlesPFBRECOLowPtElectronCleaned = cms.EDFilter("PFCandidateFwdPtrCollectionPdgIdFilter",
+    makeClones = cms.bool(True),
+    pdgId = cms.vint32(
+        211, -211, 321, -321, 999211,
+        2212, -2212, 11, -11, 13,
+        -13
+    ),
+    src = cms.InputTag("pfPileUpIsoPFBRECOLowPtElectronCleaned")
+)
+
+
 process.pfPileUpAllChargedParticlesPFBRECOMuonCleaned = cms.EDFilter("PFCandidateFwdPtrCollectionPdgIdFilter",
     makeClones = cms.bool(True),
     pdgId = cms.vint32(
@@ -13037,6 +15990,13 @@ process.recoTauPileUpVerticesElectronCleaned = cms.EDFilter("RecoTauPileUpVertex
 )
 
 
+process.recoTauPileUpVerticesLowPtElectronCleaned = cms.EDFilter("RecoTauPileUpVertexSelector",
+    filter = cms.bool(False),
+    minTrackSumPt = cms.double(5),
+    src = cms.InputTag("offlineSlimmedPrimaryVertices")
+)
+
+
 process.recoTauPileUpVerticesMuonCleaned = cms.EDFilter("RecoTauPileUpVertexSelector",
     filter = cms.bool(False),
     minTrackSumPt = cms.double(5),
@@ -13059,6 +16019,12 @@ process.selectedPatTausNoNewIDsBoosted = cms.EDFilter("PATTauSelector",
 process.selectedPatTausNoNewIDsElectronCleaned = cms.EDFilter("PATTauSelector",
     cut = cms.string("pt > 8.0 && abs(eta)<2.3 && tauID(\'decayModeFinding\')> 0.5"),
     src = cms.InputTag("patTausElectronCleaned")
+)
+
+
+process.selectedPatTausNoNewIDsLowPtElectronCleaned = cms.EDFilter("PATTauSelector",
+    cut = cms.string("pt > 8.0 && abs(eta)<2.3 && tauID(\'decayModeFinding\')> 0.5"),
+    src = cms.InputTag("patTausLowPtElectronCleaned")
 )
 
 
@@ -13116,6 +16082,22 @@ process.tauGenJetsSelectorAllHadronsElectronCleaned = cms.EDFilter("TauGenJetDec
 )
 
 
+process.tauGenJetsSelectorAllHadronsLowPtElectronCleaned = cms.EDFilter("TauGenJetDecayModeSelector",
+    filter = cms.bool(False),
+    select = cms.vstring(
+        'oneProng0Pi0',
+        'oneProng1Pi0',
+        'oneProng2Pi0',
+        'oneProngOther',
+        'threeProng0Pi0',
+        'threeProng1Pi0',
+        'threeProngOther',
+        'rare'
+    ),
+    src = cms.InputTag("tauGenJetsLowPtElectronCleaned")
+)
+
+
 process.tauGenJetsSelectorAllHadronsMuonCleaned = cms.EDFilter("TauGenJetDecayModeSelector",
     filter = cms.bool(False),
     select = cms.vstring(
@@ -13142,10 +16124,10 @@ process.tcpGenNtuples = cms.EDAnalyzer("GenAnalyzer",
     GenParticleCollection = cms.InputTag("prunedGenParticles"),
     genEventInfo = cms.InputTag("generator"),
     pileupSummaryInfo = cms.InputTag("slimmedAddPileupInfo"),
-    puDataFileName = cms.FileInPath('BoostedDiTau/MiniAODSkimmer/data/PileupHistogram-goldenJSON-13tev-2018-69200ub-99bins.root'),
-    puDataFileNameDown = cms.FileInPath('BoostedDiTau/MiniAODSkimmer/data/PileupHistogram-goldenJSON-13tev-2018-66000ub-99bins.root'),
-    puDataFileNameUp = cms.FileInPath('BoostedDiTau/MiniAODSkimmer/data/PileupHistogram-goldenJSON-13tev-2018-72400ub-99bins.root'),
-    puMCFileName = cms.FileInPath('BoostedDiTau/MiniAODSkimmer/data/PileupMC2018.root')
+    puDataFileName = cms.FileInPath('BoostedDiTau/MiniAODSkimmer/data/PileupHistogram-goldenJSON-13tev-2017-69200ub-99bins.root'),
+    puDataFileNameDown = cms.FileInPath('BoostedDiTau/MiniAODSkimmer/data/PileupHistogram-goldenJSON-13tev-2017-66000ub-99bins.root'),
+    puDataFileNameUp = cms.FileInPath('BoostedDiTau/MiniAODSkimmer/data/PileupHistogram-goldenJSON-13tev-2017-72400ub-99bins.root'),
+    puMCFileName = cms.FileInPath('BoostedDiTau/MiniAODSkimmer/data/PileupMC2017.root')
 )
 
 
@@ -13163,14 +16145,18 @@ process.tcpMetfilter = cms.EDAnalyzer("TCPMETFilter",
 )
 
 
-process.tcpNtuples = cms.EDAnalyzer("TCPNtuples_Backgrounds",
+process.tcpNtuples = cms.EDAnalyzer("TCPNtuples",
     BoostedTauCollection = cms.InputTag("slimmedTausBoosted"),
     ECleanedTauCollection = cms.InputTag("slimmedTausElectronCleaned"),
     ElectronCollection = cms.InputTag("slimmedElectrons"),
     JetCollection = cms.InputTag("updatedJets"),
+    LowPtECleanedTauCollection = cms.InputTag("slimmedTausLowPtElectronCleaned"),
+    LowPtEIdScoreCut = cms.string('4'),
+    LowPtElectronCollection = cms.InputTag("slimmedLowPtElectrons"),
     MCleanedTauCollection = cms.InputTag("slimmedTausMuonCleaned"),
     METCollection = cms.InputTag("slimmedMETs"),
     MuonCollection = cms.InputTag("slimmedMuons"),
+    PhotonCollection = cms.InputTag("slimmedPhotons"),
     UnCleanedTauCollection = cms.InputTag("slimmedTausUnCleaned"),
     VertexCollection = cms.InputTag("offlineSlimmedPrimaryVertices"),
     effAreasConfigFile = cms.FileInPath('BoostedDiTau/MiniAODSkimmer/data/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_94X.txt'),
@@ -13203,7 +16189,7 @@ process.output = cms.OutputModule("PoolOutputModule",
         filterName = cms.untracked.string('')
     ),
     fastCloning = cms.untracked.bool(False),
-    fileName = cms.untracked.string('miniAOD_TauReco_ak4PFJets_Background_2017.root'),
+    fileName = cms.untracked.string('miniAOD_TauReco_ak4PFJets_Background_2016.root'),
     outputCommands = cms.untracked.vstring(
         'drop *',
         'keep *_slimmedPhotons_*_*',
@@ -13307,8 +16293,10 @@ process.output = cms.OutputModule("PoolOutputModule",
         'keep L1GtTriggerMenuLite_l1GtTriggerMenuLite__*',
         'keep *_slimmedTausUnCleaned_*_*',
         'keep *_slimmedTausElectronCleaned_*_*',
+        'keep *_slimmedTausLowPtElectronCleaned_*_*',
         'keep *_slimmedTausMuonCleaned_*_*',
-        'keep *_lumiSummary_*_*'
+        'keep *_lumiSummary_*_*',
+        'keep *_slimmedPhotons_*_*'
     )
 )
 
@@ -13410,7 +16398,7 @@ process.MessageLogger = cms.Service("MessageLogger",
 
 process.TFileService = cms.Service("TFileService",
     closeFileFast = cms.untracked.bool(True),
-    fileName = cms.string('TCPNtuple_Backgrounds.root')
+    fileName = cms.string('TCPNtuple.root')
 )
 
 
@@ -16320,11 +19308,6 @@ process.kt6PFResidual = cms.ESProducer("LXXXCorrectionESProducer",
 )
 
 
-process.multipleScatteringParametrisationMakerESProducer = cms.ESProducer("MultipleScatteringParametrisationMakerESProducer",
-    appendToDataLabel = cms.string('')
-)
-
-
 process.muonGeometryConstants = cms.ESProducer("MuonGeometryConstantsESModule",
     appendToDataLabel = cms.string(''),
     fromDD4Hep = cms.bool(False)
@@ -16472,7 +19455,6 @@ process.GlobalTag = cms.ESSource("PoolDBESSource",
     DBParameters = cms.PSet(
         authenticationPath = cms.untracked.string(''),
         authenticationSystem = cms.untracked.int32(0),
-        connectionTimeout = cms.untracked.int32(0),
         messageLevel = cms.untracked.int32(0),
         security = cms.untracked.string('')
     ),
@@ -16482,7 +19464,7 @@ process.GlobalTag = cms.ESSource("PoolDBESSource",
     RefreshEachRun = cms.untracked.bool(False),
     RefreshOpenIOVs = cms.untracked.bool(False),
     connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
-    globaltag = cms.string('121X_upgrade2018_realistic_v7'),
+    globaltag = cms.string('120X_upgrade2018_realistic_v1'),
     pfnPostfix = cms.untracked.string(''),
     pfnPrefix = cms.untracked.string(''),
     snapshotTime = cms.string(''),
@@ -16785,7 +19767,6 @@ process.loadRecoTauTagMVAsFromPrepDB = cms.ESSource("PoolDBESSource",
     DBParameters = cms.PSet(
         authenticationPath = cms.untracked.string(''),
         authenticationSystem = cms.untracked.int32(0),
-        connectionTimeout = cms.untracked.int32(0),
         messageLevel = cms.untracked.int32(0),
         security = cms.untracked.string('')
     ),
@@ -18901,6 +21882,9 @@ process.electronCleanedPackedCandidateTask = cms.Task(process.LooseFilter, proce
 process.muonCleanedPackedCandidateTask = cms.Task(process.LooseMuonFilter, process.PackedCandsMuonCleaned)
 
 
+process.lowPtElectronCleanedPackedCandidateTask = cms.Task(process.LowPtFilter, process.PackedCandsLowPtElectronCleaned)
+
+
 process.recoTauCommonTask = cms.Task(process.recoTauAK4Jets08RegionPAT, process.recoTauPileUpVertices)
 
 
@@ -18920,6 +21904,12 @@ process.rerunMvaIsolationTaskMuonCleaned = cms.Task(process.deepTau2017v2p1MuonC
 
 
 process.newTauIDsTaskMuonCleaned = cms.Task(process.rerunMvaIsolationTaskMuonCleaned, process.selectedPatTausMuonCleaned)
+
+
+process.rerunMvaIsolationTaskLowPtElectronCleaned = cms.Task(process.deepTau2017v2p1LowPtElectronCleaned, process.patTauDiscriminationByElectronRejectionMVA62018LowPtElectronCleaned, process.patTauDiscriminationByElectronRejectionMVA62018RawLowPtElectronCleaned, process.rerunDiscriminationByIsolationOldDMMVArun2017v2LowPtElectronCleaned, process.rerunDiscriminationByIsolationOldDMMVArun2017v2rawLowPtElectronCleaned)
+
+
+process.newTauIDsTaskLowPtElectronCleaned = cms.Task(process.rerunMvaIsolationTaskLowPtElectronCleaned, process.selectedPatTausLowPtElectronCleaned)
 
 
 process.rerunMvaIsolationTaskBoosted = cms.Task(process.deepTau2017v2p1Boosted, process.patTauDiscriminationByElectronRejectionMVA62018Boosted, process.patTauDiscriminationByElectronRejectionMVA62018RawBoosted, process.rerunDiscriminationByIsolationOldDMMVArun2017v2Boosted, process.rerunDiscriminationByIsolationOldDMMVArun2017v2rawBoosted)
@@ -18953,6 +21943,9 @@ process.miniAODTausTaskElectronCleaned = cms.Task(process.ak4PFJetsLegacyHPSPiZe
 
 
 process.miniAODTausTaskMuonCleaned = cms.Task(process.ak4PFJetsLegacyHPSPiZerosMuonCleaned, process.ak4PFJetsPATMuonCleaned, process.ak4PFJetsRecoTauChargedHadronsMuonCleaned, process.combinatoricRecoTausMuonCleaned, process.hpsPFTauBasicDiscriminatorsMuonCleaned, process.hpsPFTauBasicDiscriminatorsdR03MuonCleaned, process.hpsPFTauDiscriminationByDeadECALElectronRejectionMuonCleaned, process.hpsPFTauDiscriminationByDecayModeFindingMuonCleaned, process.hpsPFTauDiscriminationByDecayModeFindingNewDMsMuonCleaned, process.hpsPFTauDiscriminationByDecayModeFindingOldDMsMuonCleaned, process.hpsPFTauDiscriminationByIsolationMVArun2v1DBdR03oldDMwLTMuonCleaned, process.hpsPFTauDiscriminationByIsolationMVArun2v1DBdR03oldDMwLTrawMuonCleaned, process.hpsPFTauDiscriminationByIsolationMVArun2v1DBnewDMwLTMuonCleaned, process.hpsPFTauDiscriminationByIsolationMVArun2v1DBnewDMwLTrawMuonCleaned, process.hpsPFTauDiscriminationByIsolationMVArun2v1DBoldDMwLTMuonCleaned, process.hpsPFTauDiscriminationByIsolationMVArun2v1DBoldDMwLTrawMuonCleaned, process.hpsPFTauDiscriminationByMuonRejectionSimpleMuonCleaned, process.hpsPFTauPrimaryVertexProducerMuonCleaned, process.hpsPFTauProducerMuonCleaned, process.hpsPFTauProducerSansRefsMuonCleaned, process.hpsPFTauSecondaryVertexProducerMuonCleaned, process.hpsPFTauTransverseImpactParametersMuonCleaned, process.hpsSelectionDiscriminatorMuonCleaned, process.muonCleanedPackedCandidateTask, process.newTauIDsTaskMuonCleaned, process.patJetsPATMuonCleaned, process.patTausMuonCleaned, process.pfAllChargedHadronsPFBRECOMuonCleaned, process.pfAllChargedParticlesPFBRECOMuonCleaned, process.pfAllNeutralHadronsAndPhotonsPFBRECOMuonCleaned, process.pfAllNeutralHadronsPFBRECOMuonCleaned, process.pfAllPhotonsPFBRECOMuonCleaned, process.pfNoPileUpIsoPFBRECOMuonCleaned, process.pfPileUpAllChargedParticlesPFBRECOMuonCleaned, process.pfPileUpIsoPFBRECOMuonCleaned, process.recoTauAK4Jets08RegionPATMuonCleaned, process.recoTauPileUpVerticesMuonCleaned, process.selectedPatTausNoNewIDsMuonCleaned, process.tauGenJetMatchMuonCleaned, process.tauGenJetsMuonCleaned, process.tauGenJetsSelectorAllHadronsMuonCleaned, process.tauIsoDepositPFCandidatesMuonCleaned, process.tauIsoDepositPFChargedHadronsMuonCleaned, process.tauIsoDepositPFGammasMuonCleaned, process.tauIsoDepositPFNeutralHadronsMuonCleaned, process.tauMatchMuonCleaned)
+
+
+process.miniAODTausTaskLowPtElectronCleaned = cms.Task(process.ak4PFJetsLegacyHPSPiZerosLowPtElectronCleaned, process.ak4PFJetsPATLowPtElectronCleaned, process.ak4PFJetsRecoTauChargedHadronsLowPtElectronCleaned, process.combinatoricRecoTausLowPtElectronCleaned, process.hpsPFTauBasicDiscriminatorsLowPtElectronCleaned, process.hpsPFTauBasicDiscriminatorsdR03LowPtElectronCleaned, process.hpsPFTauDiscriminationByDeadECALElectronRejectionLowPtElectronCleaned, process.hpsPFTauDiscriminationByDecayModeFindingLowPtElectronCleaned, process.hpsPFTauDiscriminationByDecayModeFindingNewDMsLowPtElectronCleaned, process.hpsPFTauDiscriminationByDecayModeFindingOldDMsLowPtElectronCleaned, process.hpsPFTauDiscriminationByIsolationMVArun2v1DBdR03oldDMwLTLowPtElectronCleaned, process.hpsPFTauDiscriminationByIsolationMVArun2v1DBdR03oldDMwLTrawLowPtElectronCleaned, process.hpsPFTauDiscriminationByIsolationMVArun2v1DBnewDMwLTLowPtElectronCleaned, process.hpsPFTauDiscriminationByIsolationMVArun2v1DBnewDMwLTrawLowPtElectronCleaned, process.hpsPFTauDiscriminationByIsolationMVArun2v1DBoldDMwLTLowPtElectronCleaned, process.hpsPFTauDiscriminationByIsolationMVArun2v1DBoldDMwLTrawLowPtElectronCleaned, process.hpsPFTauDiscriminationByMuonRejectionSimpleLowPtElectronCleaned, process.hpsPFTauPrimaryVertexProducerLowPtElectronCleaned, process.hpsPFTauProducerLowPtElectronCleaned, process.hpsPFTauProducerSansRefsLowPtElectronCleaned, process.hpsPFTauSecondaryVertexProducerLowPtElectronCleaned, process.hpsPFTauTransverseImpactParametersLowPtElectronCleaned, process.hpsSelectionDiscriminatorLowPtElectronCleaned, process.lowPtElectronCleanedPackedCandidateTask, process.newTauIDsTaskLowPtElectronCleaned, process.patJetsPATLowPtElectronCleaned, process.patTausLowPtElectronCleaned, process.pfAllChargedHadronsPFBRECOLowPtElectronCleaned, process.pfAllChargedParticlesPFBRECOLowPtElectronCleaned, process.pfAllNeutralHadronsAndPhotonsPFBRECOLowPtElectronCleaned, process.pfAllNeutralHadronsPFBRECOLowPtElectronCleaned, process.pfAllPhotonsPFBRECOLowPtElectronCleaned, process.pfNoPileUpIsoPFBRECOLowPtElectronCleaned, process.pfPileUpAllChargedParticlesPFBRECOLowPtElectronCleaned, process.pfPileUpIsoPFBRECOLowPtElectronCleaned, process.recoTauAK4Jets08RegionPATLowPtElectronCleaned, process.recoTauPileUpVerticesLowPtElectronCleaned, process.selectedPatTausNoNewIDsLowPtElectronCleaned, process.tauGenJetMatchLowPtElectronCleaned, process.tauGenJetsLowPtElectronCleaned, process.tauGenJetsSelectorAllHadronsLowPtElectronCleaned, process.tauIsoDepositPFCandidatesLowPtElectronCleaned, process.tauIsoDepositPFChargedHadronsLowPtElectronCleaned, process.tauIsoDepositPFGammasLowPtElectronCleaned, process.tauIsoDepositPFNeutralHadronsLowPtElectronCleaned, process.tauMatchLowPtElectronCleaned)
 
 
 process.makePatTausTask = cms.Task(process.patPFCandidateIsoDepositSelectionTask, process.patPFTauIsolationTask, process.patTaus, process.tauGenJetMatch, process.tauGenJets, process.tauGenJetsSelectorAllHadrons, process.tauMatch)
@@ -19024,6 +22017,9 @@ process.miniAODTausSequenceElectronCleaned = cms.Sequence(process.miniAODTausTas
 process.miniAODTausSequenceMuonCleaned = cms.Sequence(process.miniAODTausTaskMuonCleaned)
 
 
+process.miniAODTausSequenceLowPtElectronCleaned = cms.Sequence(process.miniAODTausTaskLowPtElectronCleaned)
+
+
 process.rerunMvaIsolationSequence = cms.Sequence(cms.Sequence(cms.Task(process.rerunDiscriminationByIsolationOldDMMVArun2017v2, process.rerunDiscriminationByIsolationOldDMMVArun2017v2raw))+process.deepTau2017v2p1+cms.Sequence(cms.Task(process.patTauDiscriminationByElectronRejectionMVA62018, process.patTauDiscriminationByElectronRejectionMVA62018Raw)))
 
 
@@ -19031,6 +22027,9 @@ process.rerunMvaIsolationSequenceElectronCleaned = cms.Sequence(cms.Sequence(cms
 
 
 process.rerunMvaIsolationSequenceMuonCleaned = cms.Sequence(cms.Sequence(cms.Task(process.rerunDiscriminationByIsolationOldDMMVArun2017v2MuonCleaned, process.rerunDiscriminationByIsolationOldDMMVArun2017v2rawMuonCleaned))+process.deepTau2017v2p1MuonCleaned+cms.Sequence(cms.Task(process.patTauDiscriminationByElectronRejectionMVA62018MuonCleaned, process.patTauDiscriminationByElectronRejectionMVA62018RawMuonCleaned)))
+
+
+process.rerunMvaIsolationSequenceLowPtElectronCleaned = cms.Sequence(cms.Sequence(cms.Task(process.rerunDiscriminationByIsolationOldDMMVArun2017v2LowPtElectronCleaned, process.rerunDiscriminationByIsolationOldDMMVArun2017v2rawLowPtElectronCleaned))+process.deepTau2017v2p1LowPtElectronCleaned+cms.Sequence(cms.Task(process.patTauDiscriminationByElectronRejectionMVA62018LowPtElectronCleaned, process.patTauDiscriminationByElectronRejectionMVA62018RawLowPtElectronCleaned)))
 
 
 process.rerunMvaIsolationSequenceBoosted = cms.Sequence(cms.Sequence(cms.Task(process.rerunDiscriminationByIsolationOldDMMVArun2017v2Boosted, process.rerunDiscriminationByIsolationOldDMMVArun2017v2rawBoosted))+process.deepTau2017v2p1Boosted+cms.Sequence(cms.Task(process.patTauDiscriminationByElectronRejectionMVA62018Boosted, process.patTauDiscriminationByElectronRejectionMVA62018RawBoosted)))
@@ -19057,13 +22056,16 @@ process.TauRecoMuonCleaned = cms.Path(process.miniAODTausSequenceMuonCleaned)
 process.TauRecoBoosted = cms.Path(process.miniAODTausSequenceBoosted)
 
 
-process.slimpath = cms.Path(process.slimmedTausUnCleaned+process.slimmedTausBoosted+process.slimmedTausElectronCleaned+process.slimmedTausMuonCleaned)
+process.TauRecoLowPtElectronCleaned = cms.Path(process.miniAODTausSequenceLowPtElectronCleaned)
+
+
+process.slimpath = cms.Path(process.slimmedTausUnCleaned+process.slimmedTausBoosted+process.slimmedTausElectronCleaned+process.slimmedTausMuonCleaned+process.slimmedTausLowPtElectronCleaned)
 
 
 process.pileupjetidpath = cms.Path(process.pileupJetIdUpdated+process.patJetCorrFactorsReapplyJEC+process.updatedJets)
 
 
-process.main_path = cms.Path(process.lumiSummary)
+process.main_path = cms.Path()
 
 
 process.tcpNtupleMaker = cms.Path(process.tcpNtuples)
@@ -19075,10 +22077,10 @@ process.tcpGenNtupleMaker = cms.Path(process.tcpGenNtuples)
 process.tcpTrigNtupleMaker = cms.Path(process.tcpTrigNtuples)
 
 
-process.tcpPrefiringMaker = cms.Path(process.tcpPrefiring)
-
-
 process.testTrigObjMaker = cms.Path(process.testTrigObj)
+
+
+process.tcpPrefiringMaker = cms.Path(process.tcpPrefiring)
 
 
 process.tcpMetfilterMaker = cms.Path(process.tcpMetfilter)
@@ -19087,4 +22089,4 @@ process.tcpMetfilterMaker = cms.Path(process.tcpMetfilter)
 process.out = cms.EndPath(process.output)
 
 
-process.schedule = cms.Schedule(*[ process.prefiringweightMaker, process.TauReco, process.TauRecoElectronCleaned, process.TauRecoMuonCleaned, process.TauRecoBoosted, process.slimpath, process.pileupjetidpath, process.main_path, process.tcpMetfilterMaker, process.tcpTrigNtupleMaker, process.tcpGenNtupleMaker, process.tcpNtupleMaker, process.tcpPrefiringMaker, process.testTrigObjMaker ])
+process.schedule = cms.Schedule(*[ process.prefiringweightMaker, process.TauReco, process.TauRecoElectronCleaned, process.TauRecoMuonCleaned, process.TauRecoBoosted, process.TauRecoLowPtElectronCleaned, process.slimpath, process.pileupjetidpath, process.main_path, process.tcpMetfilterMaker, process.tcpTrigNtupleMaker, process.tcpGenNtupleMaker, process.tcpNtupleMaker, process.tcpPrefiringMaker, process.testTrigObjMaker ])
