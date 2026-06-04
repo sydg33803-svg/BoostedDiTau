@@ -11,4 +11,6 @@
   <class name="GenParticleInfoDS"/>
   <class name="TrigObjectInfo"/>
   <class name="TrigObjectInfoDS"/>
+  <class name="PhotonInfo"/>
+  <class name="PhotonInfoDS"/>
 </lcgdict>
