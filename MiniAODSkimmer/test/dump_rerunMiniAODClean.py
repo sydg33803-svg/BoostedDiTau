@@ -3,7 +3,7 @@ import FWCore.ParameterSet.Config as cms
 process = cms.Process("TAURECO")
 
 process.source = cms.Source("PoolSource",
-    fileNames = cms.untracked.vstring('file:root://cmsxrootd.hep.wisc.edu:1094//store/mc/RunIISummer20UL16MiniAODAPVv2/DYJetsToLL_M-50_HT-70to100_TuneCP5_PSweights_13TeV-madgraphMLM-pythia8/MINIAODSIM/106X_mcRun2_asymptotic_preVFP_v11-v2/230000/10CA3EDE-F47E-044F-9F6E-DBAA69C46BFD.root'),
+    fileNames = cms.untracked.vstring('root://eoshome-y.cern.ch//eos/user/y/yohay/DYJetsToLL_M-50_HT-70to100_TuneCP5_PSweights_13TeV-madgraphMLM-pythia8-MINIAODSIM-106X_mcRun2_asymptotic_preVFP_v11-v2-230000-10CA3EDE-F47E-044F-9F6E-DBAA69C46BFD.root'),
     secondaryFileNames = cms.untracked.vstring()
 )
 process.CondDB = cms.PSet(
@@ -16114,6 +16114,25 @@ process.tauGenJetsSelectorAllHadronsMuonCleaned = cms.EDFilter("TauGenJetDecayMo
 )
 
 
+process.TCPNtuples = cms.EDAnalyzer("TCPNtuples",
+    BoostedTauCollection = cms.InputTag("slimmedTausBoosted"),
+    ECleanedTauCollection = cms.InputTag("slimmedTausElectronCleaned"),
+    ElectronCollection = cms.InputTag("slimmedElectrons"),
+    JetCollection = cms.InputTag("updatedJets"),
+    LowPtECleanedTauCollection = cms.InputTag("slimmedTausLowPtElectronCleaned"),
+    LowPtEIdScoreCut = cms.string('4'),
+    LowPtElectronCollection = cms.InputTag("slimmedLowPtElectrons"),
+    MCleanedTauCollection = cms.InputTag("slimmedTausMuonCleaned"),
+    METCollection = cms.InputTag("slimmedMETs"),
+    MuonCollection = cms.InputTag("slimmedMuons"),
+    PhotonCollection = cms.InputTag("slimmedPhotons"),
+    UnCleanedTauCollection = cms.InputTag("slimmedTausUnCleaned"),
+    VertexCollection = cms.InputTag("offlineSlimmedPrimaryVertices"),
+    effAreasConfigFile = cms.FileInPath('BoostedDiTau/MiniAODSkimmer/data/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_94X.txt'),
+    rhoTag = cms.InputTag("fixedGridRhoFastjetAll")
+)
+
+
 process.lumiSummary = cms.EDAnalyzer("LumiAnalyzer",
     genEventInfo = cms.InputTag("generator")
 )
@@ -16142,25 +16161,6 @@ process.tcpMetfilter = cms.EDAnalyzer("TCPMETFilter",
     hbheIsoFilterSel = cms.string('Flag_HBHENoiseIsoFilter'),
     metFilters = cms.InputTag("TriggerResults","","PAT"),
     primaryVertexFilterSel = cms.string('Flag_goodVertices')
-)
-
-
-process.tcpNtuples = cms.EDAnalyzer("TCPNtuples",
-    BoostedTauCollection = cms.InputTag("slimmedTausBoosted"),
-    ECleanedTauCollection = cms.InputTag("slimmedTausElectronCleaned"),
-    ElectronCollection = cms.InputTag("slimmedElectrons"),
-    JetCollection = cms.InputTag("updatedJets"),
-    LowPtECleanedTauCollection = cms.InputTag("slimmedTausLowPtElectronCleaned"),
-    LowPtEIdScoreCut = cms.string('4'),
-    LowPtElectronCollection = cms.InputTag("slimmedLowPtElectrons"),
-    MCleanedTauCollection = cms.InputTag("slimmedTausMuonCleaned"),
-    METCollection = cms.InputTag("slimmedMETs"),
-    MuonCollection = cms.InputTag("slimmedMuons"),
-    PhotonCollection = cms.InputTag("slimmedPhotons"),
-    UnCleanedTauCollection = cms.InputTag("slimmedTausUnCleaned"),
-    VertexCollection = cms.InputTag("offlineSlimmedPrimaryVertices"),
-    effAreasConfigFile = cms.FileInPath('BoostedDiTau/MiniAODSkimmer/data/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_94X.txt'),
-    rhoTag = cms.InputTag("fixedGridRhoFastjetAll")
 )
 
 
@@ -22068,7 +22068,7 @@ process.pileupjetidpath = cms.Path(process.pileupJetIdUpdated+process.patJetCorr
 process.main_path = cms.Path()
 
 
-process.tcpNtupleMaker = cms.Path(process.tcpNtuples)
+process.tcpNtupleMaker = cms.Path(process.TCPNtuples)
 
 
 process.tcpGenNtupleMaker = cms.Path(process.tcpGenNtuples)
