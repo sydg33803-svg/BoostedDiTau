@@ -1118,9 +1118,10 @@ def addTCPNtuples(process):
                                         MCleanedTauCollection = cms.InputTag('slimmedTausMuonCleaned'),
                                         BoostedTauCollection = cms.InputTag('slimmedTausBoosted'),
                                         PhotonCollection = cms.InputTag('slimmedPhotons'),
+                                        rhoLabel = cms.InputTag('fixedGridRhoFastjetAll')
                                         
     )
-    process.tcpNtupleMaker = cms.Path(process.tcpNtuples)
+    process.tcpNtupleMaker = cms.Path(process.TCPNtuples)
 
     process.tcpGenNtuples = cms.EDAnalyzer("GenAnalyzer",
                                         GenParticleCollection = cms.InputTag("prunedGenParticles"),
