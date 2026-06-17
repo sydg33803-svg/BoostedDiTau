@@ -359,14 +359,7 @@ void TCPNtuples::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       e.dz = dz;
       lowPtElectronInfoData->push_back(e);
     }
-  }
-
-  edm::Handle< std::vector<pat::Photon> > PhotonsHandle;
-  iEvent.getByToken(Photons_, PhotonsHandle);
-  auto Photons = *PhotonsHandle;
-
-  double rhoForPho = pRho.isValid() ? (*pRho) : 0.;
-  fillPhotonInfoDS(Photons, rhoForPho); 
+  } 
 
   edm::Handle< std::vector<pat::Tau> > TausUnCleanedHandle;
   iEvent.getByToken(TausUnCleaned_, TausUnCleanedHandle);
