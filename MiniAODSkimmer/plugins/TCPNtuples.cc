@@ -1,5 +1,44 @@
 #include "BoostedDiTau/MiniAODSkimmer/plugins/TCPNtuples.h"
 
+namespace {
+  // Cut-based photon ID working points
+  // The isolation cuts are: absIso < C1 + EA*rho + C2*Et (+ C3*Et*Et for neutral hadrons).
+  struct PhoWP {
+    double hOverE;
+    double sigmaIetaIeta;
+    double chHadC1, chHadC2;             // charged hadron iso: C1 + C2*Et
+    double neuHadC1, neuHadC2, neuHadC3; // neutral hadron iso: C1 + C2*Et + C3*Et*Et
+    double phoC1, phoC2;                 // photon iso:         C1 + C2*Et
+  };
+
+  // Index 0 = barrel (|SCeta| < 1.479), index 1 = endcap.
+  const PhoWP kPhoLoose[2] = {
+    {0.04596, 0.0106,  1.694, 0.0, 24.032, 0.01512, 0.00002259, 2.876, 0.004017},
+    {0.0590,  0.0272,  2.089, 0.0, 19.722, 0.0117,  0.000023,   4.162, 0.0037}
+  };
+  const PhoWP kPhoMedium[2] = {
+    {0.02197, 0.01015, 1.141, 0.0, 1.189,  0.01512, 0.00002259, 2.08,  0.004017},
+    {0.0326,  0.0272,  1.051, 0.0, 2.718,  0.0117,  0.000023,   3.867, 0.0037}
+  };
+  const PhoWP kPhoTight[2] = {
+    {0.02148, 0.00996, 0.65,  0.0, 0.317,  0.01512, 0.00002259, 2.044, 0.004017},
+    {0.0321,  0.0271,  0.517, 0.0, 2.716,  0.0117,  0.000023,   3.032, 0.0037}
+  };
+
+  bool passPhotonWP(const pat::Photon& photon, const PhoWP& wp,
+		    double rho, double eaChHad, double eaNeuHad, double eaPho) {
+    const float et = photon.et();
+    // VID PhoSCEtaMultiRangeCut: |SCeta| must lie in [0,1.479] or [1.479,2.5]
+    if (std::abs(photon.superCluster()->eta()) >= 2.5) return false;
+    if (photon.hcalOverEcalBc() >= wp.hOverE) return false;
+    if (photon.full5x5_sigmaIetaIeta() >= wp.sigmaIetaIeta) return false;
+    if (photon.chargedHadronIso() >= wp.chHadC1 + eaChHad*rho + wp.chHadC2*et) return false;
+    if (photon.neutralHadronIso() >= wp.neuHadC1 + eaNeuHad*rho + wp.neuHadC2*et + wp.neuHadC3*et*et) return false;
+    if (photon.photonIso()        >= wp.phoC1 + eaPho*rho + wp.phoC2*et) return false;
+    return true;
+  }
+}
+
 TCPNtuples::TCPNtuples(const edm::ParameterSet& iConfig) :
   MET_(consumes< vector<pat::MET> > (iConfig.getParameter<edm::InputTag>("METCollection"))),
   Jets_(consumes< vector<pat::Jet> > (iConfig.getParameter<edm::InputTag>("JetCollection"))),
@@ -16,6 +55,9 @@ TCPNtuples::TCPNtuples(const edm::ParameterSet& iConfig) :
   TausMCleaned_(consumes< vector<pat::Tau> > (iConfig.getParameter<edm::InputTag>("MCleanedTauCollection"))),
   TausBoosted_(consumes< vector<pat::Tau> > (iConfig.getParameter<edm::InputTag>("BoostedTauCollection"))),
   Photons_(consumes< vector<pat::Photon> >(iConfig.getParameter<edm::InputTag>("PhotonCollection")))
+  effAreaChHadPhotons_(edm::FileInPath("RecoEgamma/PhotonIdentification/data/Fall17/effAreaPhotons_cone03_pfChargedHadrons_90percentBased_V2.txt").fullPath()),
+  effAreaNeuHadPhotons_(edm::FileInPath("RecoEgamma/PhotonIdentification/data/Fall17/effAreaPhotons_cone03_pfNeutralHadrons_90percentBased_V2.txt").fullPath()),
+  effAreaPhoPhotons_(edm::FileInPath("RecoEgamma/PhotonIdentification/data/Fall17/effAreaPhotons_cone03_pfPhotons_90percentBased_V2.txt").fullPath())
 {
   usesResource(TFileService::kSharedResource);
 }
@@ -323,20 +365,8 @@ void TCPNtuples::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   iEvent.getByToken(Photons_, PhotonsHandle);
   auto Photons = *PhotonsHandle;
 
-  if (Photons.size() > 0) {
-    for (unsigned int i = 0; i < Photons.size(); ++i) {
-      auto photon = Photons[i];
-      if (photon.pt() < 10 || photon.eta() > 2.5) continue;
-
-      PhotonInfo p;
-      p.pt   = photon.pt();
-      p.eta  = photon.eta();
-      p.phi  = photon.phi();
-      // p.mass = photon.mass();
-
-      photonInfoData->push_back(p);
-    }
-  }
+  double rhoForPho = pRho.isValid() ? (*pRho) : 0.;
+  fillPhotonInfoDS(Photons, rhoForPho); 
 
   edm::Handle< std::vector<pat::Tau> > TausUnCleanedHandle;
   iEvent.getByToken(TausUnCleaned_, TausUnCleanedHandle);
@@ -435,6 +465,39 @@ void TCPNtuples::fillTauInfoDS(const std::vector<pat::Tau>& Taus, int whichColl)
   }
 }
 
+void TCPNtuples::fillPhotonInfoDS(const std::vector<pat::Photon>& Photons, double rho) {
+  for (unsigned int i = 0; i < Photons.size(); ++i) {
+    auto photon = Photons[i];
+    if (photon.pt() < 10 || photon.eta() > 2.5) continue;
+
+    PhotonInfo p;
+    p.pt     = photon.pt();
+    p.eta    = photon.eta();
+    p.phi    = photon.phi();
+    p.energy = photon.energy();
+
+    // Raw cut-based ID variables
+    p.hOverE           = photon.hcalOverEcalBc();
+    p.sigmaIetaIeta    = photon.full5x5_sigmaIetaIeta();
+    p.chargedHadronIso = photon.chargedHadronIso();
+    p.neutralHadronIso = photon.neutralHadronIso();
+    p.photonIso        = photon.photonIso();
+
+    // Effective areas are binned in |supercluster eta|
+    const float absSCEta = std::abs(photon.superCluster()->eta());
+    const double eaChHad  = effAreaChHadPhotons_.getEffectiveArea(absSCEta);
+    const double eaNeuHad = effAreaNeuHadPhotons_.getEffectiveArea(absSCEta);
+    const double eaPho    = effAreaPhoPhotons_.getEffectiveArea(absSCEta);
+
+    // Barrel (0) vs endcap (1) split matches the VID PhoSCEtaMultiRangeCut
+    const int region = (absSCEta < 1.479) ? 0 : 1;
+    p.passLooseId  = passPhotonWP(photon, kPhoLoose[region],  rho, eaChHad, eaNeuHad, eaPho) ? 1 : 0;
+    p.passMediumId = passPhotonWP(photon, kPhoMedium[region], rho, eaChHad, eaNeuHad, eaPho) ? 1 : 0;
+    p.passTightId  = passPhotonWP(photon, kPhoTight[region],  rho, eaChHad, eaNeuHad, eaPho) ? 1 : 0;
+
+    photonInfoData->push_back(p);
+  }
+}
 float TCPNtuples::deltaR(float phi1, float phi2, float eta1, float eta2) {
   
   const float dphi = reco::deltaPhi(phi1, phi2);
