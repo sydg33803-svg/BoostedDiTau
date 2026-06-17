@@ -10,6 +10,18 @@ public:
     float phi;
     float energy;
 
+    // Raw cut-based ID variables (Fall17-94X-V2)
+    float hOverE;            // single-tower H/E (hcalOverEcalBc)
+    float sigmaIetaIeta;     // full5x5 sigma_iEta_iEta
+    float chargedHadronIso;  // PF charged hadron isolation (uncorrected)
+    float neutralHadronIso;  // PF neutral hadron isolation (uncorrected)
+    float photonIso;         // PF photon isolation (uncorrected)
+
+    // Cut-based ID decisions (1 = pass, 0 = fail, -1 = not evaluated)
+    int passLooseId;
+    int passMediumId;
+    int passTightId;
+
     PhotonInfo() :
         pt(-999.), eta(-999.), phi(-999.), energy(-999.)
     {}
