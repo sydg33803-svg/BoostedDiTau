@@ -419,6 +419,22 @@ void TCPNtuples::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   metInfo_.covYY = met.getSignificanceMatrix().At(1,1);
   metInfo_.covXY = met.getSignificanceMatrix().At(0,1);
 
+  // -------------------- Photons --------------------
+  edm::Handle<std::vector<pat::Photon>> PhotonsHandle;
+  iEvent.getByToken(Photons_, PhotonsHandle);
+
+  edm::Handle<double> rhoHandle;
+  iEvent.getByToken(rhoTag_, rhoHandle);
+  double rho = rhoHandle.isValid() ? *rhoHandle : 0.0;
+
+  if (PhotonsHandle.isValid()) {
+    auto Photons = *PhotonsHandle;
+    if (Photons.size() > 0) {
+      fillPhotonInfoDS(Photons, rho);
+    }
+  }
+
+
   tree->Fill();
 }
 
