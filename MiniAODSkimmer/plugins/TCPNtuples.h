@@ -31,8 +31,6 @@
 #include "BoostedDiTau/MiniAODSkimmer/interface/TauInfoDS.h"
 #include "BoostedDiTau/MiniAODSkimmer/interface/PhotonInfoDS.h"
 
-#include "RecoEgamma/PhotonIdentification/interface/EffectiveAreas.h"
-
 #include "TH1D.h"
 #include "TH2D.h"
 #include "TTree.h"
