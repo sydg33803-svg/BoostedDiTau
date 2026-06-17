@@ -254,6 +254,8 @@ process.ak4PFJetsRecoTauChargedHadronsMuonCleaned.minJetPt = jetPt
 
 tauAtMiniToolsCustom.addFurtherSkimming(process)
 tauAtMiniToolsCustom.addTCPNtuples(process)
+process.TCPNtupleStep = cms.Path(process.TCPNtuples)
+process.schedule.append(process.TCPNtupleStep) 
 
 #process.out = cms.EndPath(process.output)
 #process.schedule.append(process.out)
