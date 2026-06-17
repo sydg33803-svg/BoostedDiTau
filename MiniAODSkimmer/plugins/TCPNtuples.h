@@ -13,6 +13,7 @@
 #include "FWCore/Framework/interface/MakerMacros.h"
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/ParameterSet/interface/FileInPath.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
@@ -29,6 +30,8 @@
 #include "BoostedDiTau/MiniAODSkimmer/interface/ElectronInfoDS.h"
 #include "BoostedDiTau/MiniAODSkimmer/interface/TauInfoDS.h"
 #include "BoostedDiTau/MiniAODSkimmer/interface/PhotonInfoDS.h"
+
+#include "RecoEgamma/PhotonIdentification/interface/EffectiveAreas.h"
 
 #include "TH1D.h"
 #include "TH2D.h"
@@ -117,6 +120,12 @@ private:
   edm::EDGetTokenT< std::vector<pat::Tau> > TausMCleaned_;
   edm::EDGetTokenT< std::vector<pat::Tau> > TausBoosted_;
   edm::EDGetTokenT< std::vector<pat::Photon> > Photons_;
+
+  // Effective areas for the cut-based photon ID isolation pile-up corrections
+  // (Fall17-94X-V2, files shipped with RecoEgamma/PhotonIdentification)
+  EffectiveAreas effAreaChHadPhotons_;
+  EffectiveAreas effAreaNeuHadPhotons_;
+  EffectiveAreas effAreaPhoPhotons_;
   
   int event_;
   int run_;
@@ -150,6 +159,7 @@ private:
   MetInfo metInfo_;
 
   void fillTauInfoDS(const std::vector<pat::Tau>& TauCollection, int whichColl);
+  void fillPhotonInfoDS(const std::vector<pat::Photon>& PhotonCollection, double rho);
   float deltaR(float phi1, float phi2, float eta1, float eta2);
 };
 
