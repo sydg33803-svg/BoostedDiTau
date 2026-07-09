@@ -22,6 +22,8 @@ public:
     int passMediumId;
     int passTightId;
 
+
+
     PhotonInfo() :
         pt(-999.), eta(-999.), phi(-999.), energy(-999.)
     {}

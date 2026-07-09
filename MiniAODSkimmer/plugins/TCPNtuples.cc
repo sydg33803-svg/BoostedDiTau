@@ -181,7 +181,8 @@ void TCPNtuples::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       else m.id = 1;
       m.dxy = muon.muonBestTrack()->dxy();
       m.dz = muon.muonBestTrack()->dz();
-      m.trigmatch = muon.triggered("HLT_Mu27_*");
+      m.trigmatch = muon.triggered("HLT_IsoMu24_eta2p1_*") || 
+	muon.triggered("HLT_IsoMu27_*");
       muonInfoData->push_back(m);
     }
   }
