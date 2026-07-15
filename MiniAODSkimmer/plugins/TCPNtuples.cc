@@ -55,6 +55,8 @@ TCPNtuples::TCPNtuples(const edm::ParameterSet& iConfig) :
   TausMCleaned_(consumes< vector<pat::Tau> > (iConfig.getParameter<edm::InputTag>("MCleanedTauCollection"))),
   TausBoosted_(consumes< vector<pat::Tau> > (iConfig.getParameter<edm::InputTag>("BoostedTauCollection"))),
   Photons_(consumes< vector<pat::Photon> >(iConfig.getParameter<edm::InputTag>("PhotonCollection"))),
+  triggerBits_(consumes<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("bits"))),
+  triggerObjects_(consumes<std::vector<pat::TriggerObjectStandAlone>>(iConfig.getParameter<edm::InputTag>("objects"))),
   effAreaChHadPhotons_(edm::FileInPath("RecoEgamma/PhotonIdentification/data/Fall17/effAreaPhotons_cone03_pfChargedHadrons_90percentBased_V2.txt").fullPath()),
   effAreaNeuHadPhotons_(edm::FileInPath("RecoEgamma/PhotonIdentification/data/Fall17/effAreaPhotons_cone03_pfNeutralHadrons_90percentBased_V2.txt").fullPath()),
   effAreaPhoPhotons_(edm::FileInPath("RecoEgamma/PhotonIdentification/data/Fall17/effAreaPhotons_cone03_pfPhotons_90percentBased_V2.txt").fullPath())
@@ -421,10 +423,18 @@ void TCPNtuples::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   iEvent.getByToken(rhoTag_, rhoHandle);
   double rho = rhoHandle.isValid() ? *rhoHandle : 0.0;
 
+  edm::Handle<edm::TriggerResults> triggerBits;
+  iEvent.getByToken(triggerBits_, triggerBits);
+
+  edm::Handle<std::vector<pat::TriggerObjectStandAlone>> triggerObjects;
+  iEvent.getByToken(triggerObjects_, triggerObjects);
+
+  const edm::TriggerNames &names = iEvent.triggerNames(*triggerBits);
+
   if (PhotonsHandle.isValid()) {
     auto Photons = *PhotonsHandle;
     if (Photons.size() > 0) {
-      fillPhotonInfoDS(Photons, rho);
+      fillPhotonInfoDS(Photons, rho, *triggerObjects, names);
     }
   }
 
@@ -475,7 +485,9 @@ void TCPNtuples::fillTauInfoDS(const std::vector<pat::Tau>& Taus, int whichColl)
   }
 }
 
-void TCPNtuples::fillPhotonInfoDS(const std::vector<pat::Photon>& Photons, double rho) {
+void TCPNtuples::fillPhotonInfoDS(const std::vector<pat::Photon>& Photons, double rho,
+                                  const std::vector<pat::TriggerObjectStandAlone>& trigObjs,
+                                  const edm::TriggerNames& names) {
   for (unsigned int i = 0; i < Photons.size(); ++i) {
     auto photon = Photons[i];
     if (photon.pt() < 10 || photon.eta() > 2.5) continue;
@@ -504,6 +516,21 @@ void TCPNtuples::fillPhotonInfoDS(const std::vector<pat::Photon>& Photons, doubl
     p.passLooseId  = passPhotonWP(photon, kPhoLoose[region],  rho, eaChHad, eaNeuHad, eaPho) ? 1 : 0;
     p.passMediumId = passPhotonWP(photon, kPhoMedium[region], rho, eaChHad, eaNeuHad, eaPho) ? 1 : 0;
     p.passTightId  = passPhotonWP(photon, kPhoTight[region],  rho, eaChHad, eaNeuHad, eaPho) ? 1 : 0;
+
+    p.trigmatch = false;
+    for (pat::TriggerObjectStandAlone obj : trigObjs) {
+      obj.unpackPathNames(names);
+      for (const std::string& path : obj.pathNames(true)) {
+        if (path.find("HLT_Mu17_Photon30_CaloIdL_L1ISO_v") != std::string::npos) {
+          double dR = deltaR(obj.phi(), photon.phi(), obj.eta(), photon.eta());
+          if (dR < 0.3) {
+            p.trigmatch = true;
+            break;
+          }
+        }
+      }
+      if (p.trigmatch) break;
+    }
 
     photonInfoData->push_back(p);
   }

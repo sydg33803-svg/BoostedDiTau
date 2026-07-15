@@ -21,7 +21,7 @@ public:
     int passLooseId;
     int passMediumId;
     int passTightId;
-
+    bool trigmatch;
 
 
     PhotonInfo() :

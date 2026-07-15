@@ -25,6 +25,10 @@
 #include "DataFormats/PatCandidates/interface/Tau.h"
 #include "DataFormats/PatCandidates/interface/Photon.h"
 
+#include "DataFormats/Common/interface/TriggerResults.h"
+#include "FWCore/Common/interface/TriggerNames.h"
+#include "DataFormats/PatCandidates/interface/TriggerObjectStandAlone.h"
+
 #include "BoostedDiTau/MiniAODSkimmer/interface/JetInfoDS.h"
 #include "BoostedDiTau/MiniAODSkimmer/interface/MuonInfoDS.h"
 #include "BoostedDiTau/MiniAODSkimmer/interface/ElectronInfoDS.h"
@@ -118,6 +122,8 @@ private:
   edm::EDGetTokenT< std::vector<pat::Tau> > TausMCleaned_;
   edm::EDGetTokenT< std::vector<pat::Tau> > TausBoosted_;
   edm::EDGetTokenT< std::vector<pat::Photon> > Photons_;
+  edm::EDGetTokenT<edm::TriggerResults> triggerBits_;
+  edm::EDGetTokenT<std::vector<pat::TriggerObjectStandAlone>> triggerObjects_;
 
   // Effective areas for the cut-based photon ID isolation pile-up corrections
   // (Fall17-94X-V2, files shipped with RecoEgamma/PhotonIdentification)
@@ -157,7 +163,9 @@ private:
   MetInfo metInfo_;
 
   void fillTauInfoDS(const std::vector<pat::Tau>& TauCollection, int whichColl);
-  void fillPhotonInfoDS(const std::vector<pat::Photon>& PhotonCollection, double rho);
+  void fillPhotonInfoDS(const std::vector<pat::Photon>& PhotonCollection, double rho,
+			const std::vector<pat::TriggerObjectStandAlone>& trigObjs,
+			const edm::TriggerNames& names);
   float deltaR(float phi1, float phi2, float eta1, float eta2);
 };
 

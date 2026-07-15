@@ -1118,6 +1118,8 @@ def addTCPNtuples(process):
                                         MCleanedTauCollection = cms.InputTag('slimmedTausMuonCleaned'),
                                         BoostedTauCollection = cms.InputTag('slimmedTausBoosted'),
                                         PhotonCollection = cms.InputTag('slimmedPhotons'),
+                                        bits = cms.InputTag("TriggerResults","","HLT"),
+                                        objects = cms.InputTag("slimmedPatTrigger"),                                       
                                         rhoLabel = cms.InputTag('fixedGridRhoFastjetAll')
                                         
     )
