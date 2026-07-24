@@ -185,6 +185,8 @@ void TCPNtuples::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       m.dz = muon.muonBestTrack()->dz();
       m.trigmatch = muon.triggered("HLT_IsoMu24_eta2p1_*") || 
 	muon.triggered("HLT_IsoMu27_*");
+      m.trigmatchMu23Ele12 = muon.triggered("HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_*");
+      m.trigmatchMu12Ele23 = muon.triggered("HLT_Mu12_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_*");
       muonInfoData->push_back(m);
     }
   }
@@ -522,16 +524,24 @@ void TCPNtuples::fillPhotonInfoDS(const std::vector<pat::Photon>& Photons, doubl
       obj.unpackPathNames(names);
       for (const std::string& path : obj.pathNames(true)) {
         if (path.find("HLT_Mu17_Photon30_CaloIdL_L1ISO_v") != std::string::npos) {
-          double dR = deltaR(obj.phi(), photon.phi(), obj.eta(), photon.eta());
-          if (dR < 0.3) {
-            p.trigmatch = true;
-            break;
+          bool photonLeg = false;
+          for (unsigned h = 0; h < obj.filterIds().size(); ++h) {
+            if (obj.filterIds()[h] == 92) {
+              photonLeg = true;
+              break;
+            }
+          }
+          if (photonLeg) {
+            double dR = deltaR(obj.phi(), photon.phi(), obj.eta(), photon.eta());
+            if (dR < 0.3) {
+              p.trigmatch = true;
+              break;
+            }
           }
         }
       }
       if (p.trigmatch) break;
     }
-
     photonInfoData->push_back(p);
   }
 }

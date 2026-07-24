@@ -9,6 +9,8 @@ struct MuonInfo {
   float iso; 
   float dxy, dz;
   bool trigmatch;
+  bool trigmatchMu23Ele12;
+  bool trigmatchMu12Ele23;
 
   bool operator<(const MuonInfo& m) const { return pt < m.pt; }
   

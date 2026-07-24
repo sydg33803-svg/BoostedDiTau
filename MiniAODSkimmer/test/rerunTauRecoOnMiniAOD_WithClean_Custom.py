@@ -26,7 +26,7 @@ runType = 'background'
 #runType = 'background'
 #runType = 'data'
 #maxEvents = 100
-maxEvents=10000
+maxEvents=-1
 appendOutput = True
 isMC = True
 year='2016'
@@ -61,6 +61,7 @@ if phase2:
     from Configuration.Eras.Era_Phase2_timing_cff import Phase2_timing
     era = Phase2_timing
 process = cms.Process("TAURECO", era)
+process.options.numberOfThreads = cms.untracked.uint32(4)  # use 4 cores
 # for CH reco
 process.load("Configuration.StandardSequences.MagneticField_cff")
 if not phase2:
