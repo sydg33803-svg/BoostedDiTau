@@ -433,6 +433,17 @@ void TCPNtuples::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 
   const edm::TriggerNames &names = iEvent.triggerNames(*triggerBits);
 
+  // DEBUG: print fired photon/Mu17 paths
+  //  for (unsigned i = 0; i < triggerBits->size(); i++) {
+  //if (triggerBits->accept(i)) {
+  //  std::string name = names.triggerName(i);
+  //  if (name.find("Photon") != std::string::npos || 
+  //	  name.find("Mu17") != std::string::npos) {
+  //	std::cout << "FIRED: " << name << std::endl;
+  //  }
+  //}
+  // }
+
   if (PhotonsHandle.isValid()) {
     auto Photons = *PhotonsHandle;
     if (Photons.size() > 0) {
@@ -524,6 +535,16 @@ void TCPNtuples::fillPhotonInfoDS(const std::vector<pat::Photon>& Photons, doubl
       obj.unpackPathNames(names);
       for (const std::string& path : obj.pathNames(true)) {
         if (path.find("HLT_Mu17_Photon30_CaloIdL_L1ISO_v") != std::string::npos) {
+	  // DEBUG: print filter IDs and filter labels
+	  //	  std::cout << "DEBUG HLT_Mu17_Photon30 trigger object:"
+          //          << " pt=" << obj.pt()
+	  //        << " eta=" << obj.eta()
+	  //        << " phi=" << obj.phi()
+	  //        << " filterIDs: ";
+	  // for (unsigned h = 0; h < obj.filterIds().size(); ++h)
+	  // std::cout << obj.filterIds()[h] << " ";
+	  //	  std::cout << std::endl;
+
           bool photonLeg = false;
           for (unsigned h = 0; h < obj.filterIds().size(); ++h) {
             if (obj.filterIds()[h] == 92) {

@@ -25,7 +25,7 @@ inputfile = 'file:root://cmsxrootd.hep.wisc.edu:1094//store/mc/RunIISummer20UL16
 runType = 'background'
 #runType = 'background'
 #runType = 'data'
-#maxEvents = 100
+#maxEvents = 10000
 maxEvents=-1
 appendOutput = True
 isMC = True
@@ -61,7 +61,7 @@ if phase2:
     from Configuration.Eras.Era_Phase2_timing_cff import Phase2_timing
     era = Phase2_timing
 process = cms.Process("TAURECO", era)
-process.options.numberOfThreads = cms.untracked.uint32(4)  # use 4 cores
+
 # for CH reco
 process.load("Configuration.StandardSequences.MagneticField_cff")
 if not phase2:
@@ -282,7 +282,7 @@ if process.maxEvents.input.value() > 10000 or process.maxEvents.input.value() < 
 #)
 
 process.options = dict( # numberOfThreads = 4,
-    numberOfThreads = 1,
+    numberOfThreads = 4,
                       #  numberOfStreams = 0,
     wantSummary = True
 )
