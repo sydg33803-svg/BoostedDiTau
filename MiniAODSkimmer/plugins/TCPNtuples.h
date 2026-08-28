@@ -164,8 +164,10 @@ private:
 
   void fillTauInfoDS(const std::vector<pat::Tau>& TauCollection, int whichColl);
   void fillPhotonInfoDS(const std::vector<pat::Photon>& PhotonCollection, double rho,
-			const std::vector<pat::TriggerObjectStandAlone>& trigObjs,
-			const edm::TriggerNames& names);
+                        const std::vector<pat::TriggerObjectStandAlone>& trigObjs,
+                        const edm::TriggerNames& names,
+                        const edm::Event& iEvent,
+                        const edm::Handle<edm::TriggerResults>& triggerBits);
   float deltaR(float phi1, float phi2, float eta1, float eta2);
 };
 

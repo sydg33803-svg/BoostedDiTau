@@ -222,7 +222,7 @@ process.leadTrackFinding = cms.PSet(
 )
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(-1),
+    input = cms.untracked.int32(10000),
     output = cms.optional.untracked.allowed(cms.int32,cms.PSet)
 )
 
@@ -256,7 +256,7 @@ process.options = cms.untracked.PSet(
     numberOfConcurrentLuminosityBlocks = cms.untracked.uint32(0),
     numberOfConcurrentRuns = cms.untracked.uint32(1),
     numberOfStreams = cms.untracked.uint32(0),
-    numberOfThreads = cms.untracked.uint32(1),
+    numberOfThreads = cms.untracked.uint32(4),
     printDependencies = cms.untracked.bool(False),
     sizeOfStackForThreadsInKB = cms.optional.untracked.uint32,
     throwIfIllegalParameter = cms.untracked.bool(True),
@@ -16128,7 +16128,10 @@ process.TCPNtuples = cms.EDAnalyzer("TCPNtuples",
     PhotonCollection = cms.InputTag("slimmedPhotons"),
     UnCleanedTauCollection = cms.InputTag("slimmedTausUnCleaned"),
     VertexCollection = cms.InputTag("offlineSlimmedPrimaryVertices"),
+    bits = cms.InputTag("TriggerResults","","HLT"),
     effAreasConfigFile = cms.FileInPath('BoostedDiTau/MiniAODSkimmer/data/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_94X.txt'),
+    objects = cms.InputTag("slimmedPatTrigger"),
+    rhoLabel = cms.InputTag("fixedGridRhoFastjetAll"),
     rhoTag = cms.InputTag("fixedGridRhoFastjetAll")
 )
 
@@ -22086,7 +22089,10 @@ process.tcpPrefiringMaker = cms.Path(process.tcpPrefiring)
 process.tcpMetfilterMaker = cms.Path(process.tcpMetfilter)
 
 
+process.TCPNtupleStep = cms.Path(process.TCPNtuples)
+
+
 process.out = cms.EndPath(process.output)
 
 
-process.schedule = cms.Schedule(*[ process.prefiringweightMaker, process.TauReco, process.TauRecoElectronCleaned, process.TauRecoMuonCleaned, process.TauRecoBoosted, process.TauRecoLowPtElectronCleaned, process.slimpath, process.pileupjetidpath, process.main_path, process.tcpMetfilterMaker, process.tcpTrigNtupleMaker, process.tcpGenNtupleMaker, process.tcpNtupleMaker, process.tcpPrefiringMaker, process.testTrigObjMaker ])
+process.schedule = cms.Schedule(*[ process.prefiringweightMaker, process.TauReco, process.TauRecoElectronCleaned, process.TauRecoMuonCleaned, process.TauRecoBoosted, process.TauRecoLowPtElectronCleaned, process.slimpath, process.pileupjetidpath, process.main_path, process.tcpMetfilterMaker, process.tcpTrigNtupleMaker, process.tcpGenNtupleMaker, process.tcpNtupleMaker, process.tcpPrefiringMaker, process.testTrigObjMaker, process.TCPNtupleStep ])

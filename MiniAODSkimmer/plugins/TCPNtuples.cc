@@ -447,7 +447,7 @@ void TCPNtuples::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   if (PhotonsHandle.isValid()) {
     auto Photons = *PhotonsHandle;
     if (Photons.size() > 0) {
-      fillPhotonInfoDS(Photons, rho, *triggerObjects, names);
+      fillPhotonInfoDS(Photons, rho, *triggerObjects, names, iEvent, triggerBits);
     }
   }
 
@@ -500,7 +500,15 @@ void TCPNtuples::fillTauInfoDS(const std::vector<pat::Tau>& Taus, int whichColl)
 
 void TCPNtuples::fillPhotonInfoDS(const std::vector<pat::Photon>& Photons, double rho,
                                   const std::vector<pat::TriggerObjectStandAlone>& trigObjs,
-                                  const edm::TriggerNames& names) {
+                                  const edm::TriggerNames& names,
+                                  const edm::Event& iEvent,
+                                  const edm::Handle<edm::TriggerResults>& triggerBits) {
+  for (unsigned i = 0; i < names.triggerNames().size(); ++i) {
+    if (names.triggerNames()[i].find("HLT_Mu17_Photon30_CaloIdL_L1ISO_v") != std::string::npos) {
+      std::cout << "Path in menu: " << names.triggerNames()[i]
+                << "  accept=" << triggerBits->accept(i) << std::endl;
+    }
+  }
   for (unsigned int i = 0; i < Photons.size(); ++i) {
     auto photon = Photons[i];
     if (photon.pt() < 10 || photon.eta() > 2.5) continue;
@@ -531,19 +539,32 @@ void TCPNtuples::fillPhotonInfoDS(const std::vector<pat::Photon>& Photons, doubl
     p.passTightId  = passPhotonWP(photon, kPhoTight[region],  rho, eaChHad, eaNeuHad, eaPho) ? 1 : 0;
 
     p.trigmatch = false;
+    std::cout << "Event has " << trigObjs.size() << " total trigger objects" << std::endl;
     for (pat::TriggerObjectStandAlone obj : trigObjs) {
       obj.unpackPathNames(names);
-      for (const std::string& path : obj.pathNames(true)) {
+      obj.unpackFilterLabels(iEvent, *triggerBits);
+      std::cout << "  obj filterIds: ";
+      for (int fid : obj.filterIds()) std::cout << fid << " ";
+      std::cout << std::endl;
+      std::cout << "obj pt=" << obj.pt()
+		<< "  hasLastFilter=" << obj.hasPathLastFilterAccepted()
+		<< "  hasL3Filter=" << obj.hasPathL3FilterAccepted() << std::endl;
+      for (const std::string& path : obj.pathNames(true, false)) {
         if (path.find("HLT_Mu17_Photon30_CaloIdL_L1ISO_v") != std::string::npos) {
 	  // DEBUG: print filter IDs and filter labels
-	  //	  std::cout << "DEBUG HLT_Mu17_Photon30 trigger object:"
-          //          << " pt=" << obj.pt()
-	  //        << " eta=" << obj.eta()
-	  //        << " phi=" << obj.phi()
-	  //        << " filterIDs: ";
-	  // for (unsigned h = 0; h < obj.filterIds().size(); ++h)
-	  // std::cout << obj.filterIds()[h] << " ";
-	  //	  std::cout << std::endl;
+	  std::cout << "DEBUG HLT_Mu17_Photon30 trigger object:"
+		    << " pt=" << obj.pt()
+		    << " eta=" << obj.eta()
+		    << " phi=" << obj.phi() << std::endl;
+
+	  std::vector<std::string> labels = obj.filterLabels();
+	  std::vector<int> ids = obj.filterIds();
+	  for (unsigned h = 0; h < ids.size(); ++h) {
+	    std::cout << "  [" << h+1 << "] filterId=" << ids[h]
+		      << "  label=" << labels[h]
+		      << (h == ids.size() - 1 ? "   <-- LAST FILTER PASSED" : "")
+		      << std::endl;
+	  }
 
           bool photonLeg = false;
           for (unsigned h = 0; h < obj.filterIds().size(); ++h) {
@@ -554,7 +575,8 @@ void TCPNtuples::fillPhotonInfoDS(const std::vector<pat::Photon>& Photons, doubl
           }
           if (photonLeg) {
             double dR = deltaR(obj.phi(), photon.phi(), obj.eta(), photon.eta());
-            if (dR < 0.3) {
+	    std::cout << "  photonLeg found, dR=" << dR << std::endl;
+	    if (dR < 0.3) {
               p.trigmatch = true;
               break;
             }
@@ -563,7 +585,48 @@ void TCPNtuples::fillPhotonInfoDS(const std::vector<pat::Photon>& Photons, doubl
       }
       if (p.trigmatch) break;
     }
-    photonInfoData->push_back(p);
+    std::cout << "FINAL p.trigmatch=" << p.trigmatch << std::endl;
+
+
+  p.trigmatchMu23Ele12 = false;
+  for (pat::TriggerObjectStandAlone obj : trigObjs) {
+    obj.unpackPathNames(names);
+    obj.unpackFilterLabels(iEvent, *triggerBits);
+    for (const std::string& path : obj.pathNames(true, false)) {
+      if (path.find("HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v") != std::string::npos) {
+	bool eleLeg = false;
+	for (unsigned h = 0; h < obj.filterIds().size(); ++h) {
+	  if (obj.filterIds()[h] == 92) { eleLeg = true; break; }
+	}
+	if (eleLeg) {
+	  double dR = deltaR(obj.phi(), photon.phi(), obj.eta(), photon.eta());
+	  if (dR < 0.3) { p.trigmatchMu23Ele12 = true; break; }
+	}
+      }
+    }
+    if (p.trigmatchMu23Ele12) break;
+  }
+
+  p.trigmatchMu12Ele23 = false;
+  for (pat::TriggerObjectStandAlone obj : trigObjs) {
+    obj.unpackPathNames(names);
+    obj.unpackFilterLabels(iEvent, *triggerBits);
+    for (const std::string& path : obj.pathNames(true, false)) {
+      if (path.find("HLT_Mu12_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v") != std::string::npos) {
+	bool eleLeg = false;
+	for (unsigned h = 0; h < obj.filterIds().size(); ++h) {
+	  if (obj.filterIds()[h] == 92) { eleLeg = true; break; }
+	}
+	if (eleLeg) {
+	  double dR = deltaR(obj.phi(), photon.phi(), obj.eta(), photon.eta());
+	  if (dR < 0.3) { p.trigmatchMu12Ele23 = true; break; }
+	}
+      }
+    }
+    if (p.trigmatchMu12Ele23) break;
+  }
+
+  photonInfoData->push_back(p);
   }
 }
 float TCPNtuples::deltaR(float phi1, float phi2, float eta1, float eta2) {

@@ -22,6 +22,8 @@ public:
     int passMediumId;
     int passTightId;
     bool trigmatch;
+    bool trigmatchMu23Ele12;
+    bool trigmatchMu12Ele23;
 
 
     PhotonInfo() :
