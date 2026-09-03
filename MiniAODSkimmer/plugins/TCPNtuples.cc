@@ -180,7 +180,8 @@ void TCPNtuples::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       m.iso = (muon.pfIsolationR04().sumChargedHadronPt+max(0.,muon.pfIsolationR04().sumPhotonEt+muon.pfIsolationR04().sumNeutralHadronEt-0.5*muon.pfIsolationR04().sumPUPt))/muon.pt();
       if (muon.isTightMuon(PrimaryVertex)) m.id = 3;
       else if (muon.isMediumMuon()) m.id = 2;
-      else m.id = 1;
+      else if (muon.isLooseMuon()) m.id = 1;
+      else m.id = 0;
       m.dxy = muon.muonBestTrack()->dxy();
       m.dz = muon.muonBestTrack()->dz();
       m.trigmatch = muon.triggered("HLT_IsoMu24_eta2p1_*") || 
@@ -503,12 +504,18 @@ void TCPNtuples::fillPhotonInfoDS(const std::vector<pat::Photon>& Photons, doubl
                                   const edm::TriggerNames& names,
                                   const edm::Event& iEvent,
                                   const edm::Handle<edm::TriggerResults>& triggerBits) {
+
+  bool eventFiredMu17Photon30 = false;
+  unsigned long long evtNum = iEvent.id().event();
   for (unsigned i = 0; i < names.triggerNames().size(); ++i) {
     if (names.triggerNames()[i].find("HLT_Mu17_Photon30_CaloIdL_L1ISO_v") != std::string::npos) {
-      std::cout << "Path in menu: " << names.triggerNames()[i]
-                << "  accept=" << triggerBits->accept(i) << std::endl;
+      bool acc = triggerBits->accept(i);
+      std::cout << "Event " << evtNum << " Path in menu: " << names.triggerNames()[i]
+                << "  accept=" << acc << std::endl;
+      if (acc) eventFiredMu17Photon30 = true;
     }
   }
+
   for (unsigned int i = 0; i < Photons.size(); ++i) {
     auto photon = Photons[i];
     if (photon.pt() < 10 || photon.eta() > 2.5) continue;
@@ -543,12 +550,20 @@ void TCPNtuples::fillPhotonInfoDS(const std::vector<pat::Photon>& Photons, doubl
     for (pat::TriggerObjectStandAlone obj : trigObjs) {
       obj.unpackPathNames(names);
       obj.unpackFilterLabels(iEvent, *triggerBits);
-      std::cout << "  obj filterIds: ";
-      for (int fid : obj.filterIds()) std::cout << fid << " ";
-      std::cout << std::endl;
-      std::cout << "obj pt=" << obj.pt()
-		<< "  hasLastFilter=" << obj.hasPathLastFilterAccepted()
-		<< "  hasL3Filter=" << obj.hasPathL3FilterAccepted() << std::endl;
+      std::cout << "--- Event " << evtNum << " | obj pt=" << obj.pt()
+                << " eta=" << obj.eta() << " phi=" << obj.phi()
+                << " | hasLastFilter=" << obj.hasPathLastFilterAccepted()
+                << " hasL3Filter=" << obj.hasPathL3FilterAccepted() << " ---" << std::endl;
+      if (eventFiredMu17Photon30) {
+	std::cout << "  REAL FIRE (confirmed via TriggerResults) -- full filter chain:" << std::endl;
+	std::vector<std::string> labels2 = obj.filterLabels();
+	std::vector<int> ids2 = obj.filterIds();
+        for (unsigned h = 0; h < ids2.size(); ++h) {
+	  std::cout << "    [" << h+1 << "] id=" << ids2[h] << " label=" << labels2[h]
+                    << (h == ids2.size()-1 ? "  <-- LAST" : "") << std::endl;
+        }
+      }
+
       for (const std::string& path : obj.pathNames(true, false)) {
         if (path.find("HLT_Mu17_Photon30_CaloIdL_L1ISO_v") != std::string::npos) {
 	  // DEBUG: print filter IDs and filter labels
@@ -559,16 +574,15 @@ void TCPNtuples::fillPhotonInfoDS(const std::vector<pat::Photon>& Photons, doubl
 
 	  std::vector<std::string> labels = obj.filterLabels();
 	  std::vector<int> ids = obj.filterIds();
-	  for (unsigned h = 0; h < ids.size(); ++h) {
-	    std::cout << "  [" << h+1 << "] filterId=" << ids[h]
+	  for (unsigned h = 0; h < labels.size(); ++h) {
+	    std::cout << "  [" << h+1 << "] filterId=" << (h < ids.size() ? std::to_string(ids[h]) : "N/A")
 		      << "  label=" << labels[h]
-		      << (h == ids.size() - 1 ? "   <-- LAST FILTER PASSED" : "")
+		      << (h == labels.size() - 1 ? "   <-- LAST FILTER PASSED" : "")
 		      << std::endl;
 	  }
-
           bool photonLeg = false;
-          for (unsigned h = 0; h < obj.filterIds().size(); ++h) {
-            if (obj.filterIds()[h] == 92) {
+          for (unsigned h = 0; h < labels.size(); ++h) {
+	    if (labels[h] == lastFilterPhoton30_) {
               photonLeg = true;
               break;
             }
@@ -595,8 +609,9 @@ void TCPNtuples::fillPhotonInfoDS(const std::vector<pat::Photon>& Photons, doubl
     for (const std::string& path : obj.pathNames(true, false)) {
       if (path.find("HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v") != std::string::npos) {
 	bool eleLeg = false;
-	for (unsigned h = 0; h < obj.filterIds().size(); ++h) {
-	  if (obj.filterIds()[h] == 92) { eleLeg = true; break; }
+	std::vector<std::string> labels = obj.filterLabels();
+	for (unsigned h = 0; h < labels.size(); ++h) {
+	  if (labels[h] == lastFilterMu23Ele12_) { eleLeg = true; break; }
 	}
 	if (eleLeg) {
 	  double dR = deltaR(obj.phi(), photon.phi(), obj.eta(), photon.eta());
@@ -614,8 +629,9 @@ void TCPNtuples::fillPhotonInfoDS(const std::vector<pat::Photon>& Photons, doubl
     for (const std::string& path : obj.pathNames(true, false)) {
       if (path.find("HLT_Mu12_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v") != std::string::npos) {
 	bool eleLeg = false;
-	for (unsigned h = 0; h < obj.filterIds().size(); ++h) {
-	  if (obj.filterIds()[h] == 92) { eleLeg = true; break; }
+	std::vector<std::string> labels = obj.filterLabels();
+	for (unsigned h = 0; h < labels.size(); ++h) {
+	  if (labels[h] == lastFilterMu12Ele23_) { eleLeg = true; break; }
 	}
 	if (eleLeg) {
 	  double dR = deltaR(obj.phi(), photon.phi(), obj.eta(), photon.eta());
@@ -635,6 +651,42 @@ float TCPNtuples::deltaR(float phi1, float phi2, float eta1, float eta2) {
   const float deta = eta1 - eta2;
   const float dr = std::sqrt(deta*deta + dphi*dphi);
   return dr;
+}
+
+void TCPNtuples::beginRun(edm::Run const& iRun, edm::EventSetup const& iSetup) {
+  bool changed = true;
+  bool ok = hltConfig_.init(iRun, iSetup, "HLT", changed);
+  if (!ok) {
+    std::cout << "HLTConfigProvider init FAILED" << std::endl;
+    return;
+  }
+  if (changed) {
+    for (unsigned i = 0; i < hltConfig_.size(); ++i) {
+      std::string pathName = hltConfig_.triggerName(i);
+
+      std::string* target = nullptr;
+      if (pathName.find("HLT_Mu17_Photon30_CaloIdL_L1ISO_v") != std::string::npos) {
+        target = &lastFilterPhoton30_;
+      } else if (pathName.find("HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v") != std::string::npos) {
+        target = &lastFilterMu23Ele12_;
+      } else if (pathName.find("HLT_Mu12_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v") != std::string::npos) {
+        target = &lastFilterMu12Ele23_;
+      }
+
+      if (target != nullptr) {
+	std::cout << "=== Real menu lookup for path: " << pathName << " ===" << std::endl;
+        const std::vector<std::string>& modules = hltConfig_.moduleLabels(pathName);
+	std::string lastFilter = "";
+        for (const auto& mod : modules) {
+          bool isFilter = hltConfig_.saveTags(mod);
+	  std::cout << "  module=" << mod << "  isL3Filter=" << isFilter << std::endl;
+          if (isFilter) lastFilter = mod;
+        }
+	std::cout << "REAL LAST FILTER (from menu config, not guessed): " << lastFilter << std::endl;
+        *target = lastFilter;
+      }
+    }
+  }
 }
 
 //define this as a plug-in

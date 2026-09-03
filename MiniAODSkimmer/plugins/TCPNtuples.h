@@ -16,6 +16,7 @@
 #include "FWCore/ParameterSet/interface/FileInPath.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
+#include "HLTrigger/HLTcore/interface/HLTConfigProvider.h"
 
 #include "DataFormats/PatCandidates/interface/Muon.h"
 #include "DataFormats/PatCandidates/interface/Jet.h"
@@ -102,9 +103,14 @@ private:
 
   virtual void beginJob() override;
   virtual void endJob() override {}
-  virtual void beginRun(edm::Run const&, edm::EventSetup const&) override {}
+  virtual void beginRun(edm::Run const&, edm::EventSetup const&) override;
   virtual void endRun(edm::Run const&, edm::EventSetup const&) override {}
   virtual void analyze(edm::Event const&, edm::EventSetup const&) override;
+
+  HLTConfigProvider hltConfig_;
+  std::string lastFilterPhoton30_;
+  std::string lastFilterMu23Ele12_;
+  std::string lastFilterMu12Ele23_;
 
   TTree *tree;
   edm::EDGetTokenT< std::vector<pat::MET> > MET_;
